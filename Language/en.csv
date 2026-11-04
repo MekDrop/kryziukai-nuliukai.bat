@@ -22,3 +22,11 @@ ui.turn,Your turn
 
 ui.choose,Choose square
 ui.confirm,Place mark
+
+difficulty.label,Difficulty
+difficulty.prompt,Choose difficulty [1-3]:
+difficulty.easy,Easy - random moves
+difficulty.normal,Normal - wins and blocks
+difficulty.hard,Hard - unbeatable
+difficulty.invalid,Choose 1-3 or use /D easy /D normal /D hard.
+difficulty.help,Computer difficulty: easy / normal / hard (otherwise prompts)
