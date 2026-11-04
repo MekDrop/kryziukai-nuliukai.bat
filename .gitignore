@@ -164,3 +164,11 @@ pip-log.txt
 
 # Intelj Idea
 .idea
+
+# Browser demo dependencies, output, and local guest investigation files
+node_modules/
+dist/
+.cache/
+*.iso
+*.img
+*.vhd

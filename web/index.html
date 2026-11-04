@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Kryziukai-Nuliukai.bat - Windows in your browser</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+<style>
+  body { margin: 0; font: 15px/1.6 Arial, Helvetica, sans-serif; background: #141820; color: #eee; }
+  * { box-sizing: border-box; }
+  #compatibility { max-width: 640px; margin: 3em auto; padding: 24px; font-size: 16px; line-height: 1.6; }
+  #compatibility p { margin: 1em 0; }
+  #compatibility h1 { margin-bottom: 1em; }
+  #app { height: 100vh; height: 100dvh; margin: 0; padding: 24px; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; }
+  aside { min-height: 0; display: flex; flex-direction: column; gap: 20px; }
+  h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
+  p { margin: 0; color: #aab5c7; }
+  a { color: #9ccaff; text-underline-offset: 3px; }
+  #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
+  .hint, footer { font-size: .8rem; }
+  .languages { display: flex; gap: 8px; }
+  .languages button { display: grid; place-items: center; padding: 8px; background: transparent; border: 1px solid #526075; border-radius: 6px; cursor: pointer; }
+  .languages button[aria-pressed="true"] { background: #24394e; border-color: #9ccaff; }
+  .languages button:hover { background: #24394e; }
+  .languages button:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
+  .languages svg { display: block; width: 32px; height: 20px; }
+  footer { margin-top: auto; display: grid; gap: 6px; }
+  main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0c1016; border: 1px solid #303947; border-radius: 8px; overflow: hidden; }
+  #screen_container { flex: none; background: #000; line-height: 0; }
+  #screen_container:focus-visible { outline: 2px solid #9ccaff; outline-offset: -2px; }
+  #screen_container > div { white-space: pre; font: 14px monospace; line-height: 14px; }
+  canvas { display: none; width: 100% !important; height: 100% !important; }
+  @media (max-width: 700px) {
+    #app { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    aside { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    h1 { font-size: 1.2rem; } aside > p:first-of-type { font-size: .8rem; }
+    #status { border: 0; padding: 0; font-size: .75rem; }
+    .hint { font-size: .7rem; }
+    footer { display: flex; flex-wrap: wrap; grid-column: 1 / -1; gap: 4px 12px; margin: 0; font-size: .7rem; }
+  }
+</style>
+<div id="compatibility" role="alert">
+<h1>Kryziukai-Nuliukai.bat</h1>
+<div id="compat-en"><p>This browser cannot start the online demo. Enable JavaScript and use a browser with WebAssembly and modern JavaScript support.</p><p>You can still download the original batch game and run it directly on Windows 2000 or newer.</p><p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Download the game and read the instructions</a></p></div>
+<div id="compat-lt"><p>Ši naršyklė negali paleisti internetinės demonstracijos. Įjunkite JavaScript ir naudokite naršyklę, palaikančią WebAssembly bei šiuolaikinį JavaScript.</p><p>Originalų .bat žaidimą galite atsisiųsti ir paleisti tiesiogiai Windows 2000 ar naujesnėje sistemoje.</p><p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Atsisiųsti žaidimą ir skaityti instrukcijas</a></p></div>
+</div>
+<div id="app" style="display: none">
+<aside>
+<h1>Kryziukai-Nuliukai.bat</h1>
+<p data-i18n="description">The original batch game, running inside Windows 2000.</p>
+<div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
+<button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
+<svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
+</button>
+<button type="button" data-language="lt" aria-label="Lithuanian" aria-pressed="false" title="Lithuanian">
+<svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fdb913" d="M0 0h30v7H0z"/><path fill="#006a44" d="M0 7h30v6H0z"/><path fill="#c1272d" d="M0 13h30v7H0z"/></svg>
+</button>
+</div>
+<p id="status" data-i18n="checking" role="status" aria-live="polite">Checking machine availability...</p>
+<p class="hint" id="machine-input-hint"><span data-i18n="keyboard">Use your keyboard to play. Alt+M captures the mouse.</span><br><span id="mouse-hint" data-i18n="mouseAvailable">Click the machine to capture the mouse. Esc releases it.</span><br><span data-i18n="reload">Reload to start fresh.</span></p>
+<footer><a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></footer>
+</aside>
+<main aria-label="Windows 2000 game machine">
+<div id="screen_container" role="application" aria-label="Windows 2000 game machine" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
+</main>
+</div>
+<script>
+(function () {
+    var lt = /(?:^|[?&])lang=lt(?:&|$)/.test(window.location.search);
+    document.getElementById(lt ? 'compat-en' : 'compat-lt').style.display = 'none';
+    document.documentElement.lang = lt ? 'lt' : 'en';
+    window.kryzBrowserSupported = false;
+    try {
+        var canvas = document.createElement('canvas');
+        var supported = 'noModule' in document.createElement('script') &&
+            typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function' &&
+            typeof Promise === 'function' && typeof fetch === 'function' &&
+            typeof URL === 'function' && typeof URLSearchParams === 'function' &&
+            typeof BigInt === 'function' && typeof ResizeObserver === 'function' &&
+            typeof MutationObserver === 'function' && window.CSS &&
+            CSS.supports('display', 'grid') && canvas.getContext && canvas.getContext('2d');
+        if (!supported) return;
+        // Parse modern syntax without exposing it to legacy script parsers.
+        new Function('const x = {}; return async () => { await import("data:text/javascript,"); return x?.value ?? 0; };');
+        window.kryzBrowserSupported = true;
+        function showCompatibility() {
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('compatibility').style.display = 'block';
+        }
+        window.addEventListener('error', showCompatibility);
+        window.addEventListener('unhandledrejection', showCompatibility);
+    } catch (error) {
+        // The static fallback stays readable even if a feature probe fails.
+    }
+}());
+</script>
+<script type="module">
+if (window.kryzBrowserSupported) {
+    document.getElementById('app').style.display = 'grid';
+    document.getElementById('compatibility').style.display = 'none';
+const status = document.querySelector('#status');
+const stage = document.querySelector('main');
+const screen = document.querySelector('#screen_container');
+const canvas = screen.querySelector('canvas');
+const language = new URLSearchParams(location.search).get('lang') === 'lt' ? 'lt' : 'en';
+const text = {
+    en: {
+        description: 'The original batch game, running inside Windows 2000.',
+        checking: 'Checking machine availability...',
+        keyboard: 'Use your keyboard to play. Alt+M captures the mouse.', reload: 'Reload to start fresh.',
+        source: 'Source and setup instructions', v86License: 'v86 license', biosLicense: 'BIOS licenses', ansiLicense: 'ANSICON license',
+        languages: 'Game language', restart: 'Switching language restarts the game', en: 'English', lt: 'Lithuanian',
+        machine: 'Windows 2000 game machine', title: 'Windows in your browser',
+        mouseAvailable: 'Click the machine to capture the mouse. Esc releases it.',
+        mouseUnavailable: 'Mouse capture unavailable. Click the machine to retry.', mouseCaptured: 'Mouse captured. Press Esc to release it.',
+        launched: 'Game launch requested. Use the Windows console to play.', failed: 'Could not start the machine',
+        loading: 'Loading Windows... First boot can take several minutes.', downloadFailed: 'A machine asset could not be downloaded; reload to retry.',
+    },
+    lt: {
+        description: 'Originalus .bat žaidimas Windows 2000 sistemoje.',
+        checking: 'Tikrinamas virtualus kompiuteris...',
+        keyboard: 'Žaiskite klaviatūra. Alt+M užrakina pelę.', reload: 'Įkelkite puslapį iš naujo, kad pradėtumėte iš pradžių.',
+        source: 'Kodas ir paleidimo instrukcijos', v86License: 'v86 licencija', biosLicense: 'BIOS licencijos', ansiLicense: 'ANSICON licencija',
+        languages: 'Žaidimo kalba', restart: 'Pakeitus kalbą žaidimas pradedamas iš naujo', en: 'Anglų', lt: 'Lietuvių',
+        machine: 'Windows 2000 žaidimo kompiuteris', title: 'Windows naršyklėje',
+        mouseAvailable: 'Spustelėkite žaidimo lange, kad užrakintumėte pelę. Esc ją atlaisvina.',
+        mouseUnavailable: 'Pelės užrakinti nepavyko. Spustelėkite lange ir bandykite dar kartą.', mouseCaptured: 'Pelė užrakinta. Paspauskite Esc, kad ją atlaisvintumėte.',
+        launched: 'Žaidimas paleidžiamas. Žaiskite konsolės lange.', failed: 'Nepavyko paleisti virtualaus kompiuterio',
+        loading: 'Paleidžiama Windows... Pirmas paleidimas gali užtrukti kelias minutes.', downloadFailed: 'Nepavyko atsisiųsti failo. Įkelkite puslapį iš naujo.',
+    },
+}[language];
+document.documentElement.lang = language;
+document.title = `Kryziukai-Nuliukai.bat - ${text.title}`;
+for (const element of document.querySelectorAll('[data-i18n]')) element.textContent = text[element.dataset.i18n];
+document.querySelector('.languages').setAttribute('aria-label', text.languages);
+document.querySelector('.languages').title = text.restart;
+stage.setAttribute('aria-label', text.machine);
+screen.setAttribute('aria-label', text.machine);
+for (const button of document.querySelectorAll('[data-language]')) {
+    button.setAttribute('aria-pressed', String(button.dataset.language === language));
+    button.setAttribute('aria-label', text[button.dataset.language]);
+    button.title = text[button.dataset.language];
+    button.addEventListener('click', () => {
+        if (button.dataset.language === language) {
+            screen.focus({ preventScroll: true });
+            return;
+        }
+        const url = new URL(location.href);
+        url.searchParams.set('lang', button.dataset.language);
+        location.assign(url);
+    });
+}
+function fitScreen() {
+    const scale = Math.min(stage.clientWidth / canvas.width, stage.clientHeight / canvas.height);
+    if (!Number.isFinite(scale) || scale <= 0) return;
+    screen.style.width = `${Math.floor(canvas.width * scale)}px`;
+    screen.style.height = `${Math.floor(canvas.height * scale)}px`;
+}
+new ResizeObserver(fitScreen).observe(stage);
+new MutationObserver(fitScreen).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
+fitScreen();
+let emulator;
+const mouseHint = document.querySelector('#mouse-hint');
+async function captureMouse() {
+    if (!emulator?.is_running() || document.pointerLockElement === screen) return;
+    try {
+        await screen.requestPointerLock();
+    } catch {
+        mouseHint.textContent = text.mouseUnavailable;
+    }
+}
+screen.addEventListener('click', captureMouse);
+document.addEventListener('pointerlockchange', () => {
+    const captured = document.pointerLockElement === screen;
+    mouseHint.textContent = captured
+        ? text.mouseCaptured
+        : text.mouseAvailable;
+    if (captured) screen.focus({ preventScroll: true });
+});
+screen.addEventListener('keydown', event => {
+    if (event.altKey && event.code === 'KeyM') {
+        event.preventDefault();
+        event.stopPropagation();
+        void captureMouse();
+    }
+    if (event.key === 'Escape' && document.pointerLockElement === screen) document.exitPointerLock();
+});
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function runGame() {
+    // Windows+R opens Run on the restored Windows 2000 desktop.
+    emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
+    await sleep(800);
+    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\run.bat ${language}\n`, 20);
+    document.querySelector('#screen_container').focus({ preventScroll: true });
+    status.textContent = text.launched;
+}
+function fail(error) {
+    status.textContent = `${text.failed}: ${error.message || error}`;
+}
+try {
+    status.textContent = text.loading;
+    const { default: V86 } = await import('./vendor/libv86.mjs');
+    // Match the hardware and prepared desktop of v86's Windows 2000 demo.
+    emulator = new V86({
+        wasm_path: 'vendor/v86.wasm',
+        bios: { url: 'vendor/seabios.bin' },
+        vga_bios: { url: 'vendor/vgabios.bin' },
+        memory_size: 512 * 1024 * 1024,
+        vga_memory_size: 8 * 1024 * 1024,
+        screen_container: screen,
+        hda: {
+            url: 'https://i.copy.sh/windows2k-v2/.img',
+            size: 2147483648,
+            async: true,
+            use_parts: true,
+            fixed_chunk_size: 262144,
+        },
+        initial_state: { url: 'https://i.copy.sh/windows2k_state-v4.bin.zst' },
+        boot_order: 0x132,
+        acpi: false,
+        disable_speaker: true,
+        autostart: false,
+    });
+    emulator.add_listener('download-error', () => fail(new Error(text.downloadFailed)));
+    emulator.add_listener('emulator-ready', async () => {
+        try {
+            // Restore first, then insert the current game disk without caching it.
+            const floppy = await fetch('game.img', { cache: 'no-store' });
+            if (!floppy.ok) throw new Error(`game floppy HTTP ${floppy.status}`);
+            await emulator.set_fda({ buffer: await floppy.arrayBuffer() });
+            await emulator.run();
+            await sleep(2000);
+            await runGame();
+        } catch (error) { fail(error); }
+    });
+} catch (error) { fail(error); }
+}
+</script>
+</html>

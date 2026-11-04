@@ -1,4 +1,5 @@
 @echo off
+title Kryziukai-Nuliukai.bat - Tic-Tac-Toe
 
 REM ---------------------------------------- LICENSE -------------------------------------------------------
 REM
@@ -19,12 +20,13 @@ REM    This app is can run only on Windows 2000 or newer
 rem Setting default data
 setlocal EnableExtensions DisableDelayedExpansion
 set app_name=%0
+set "script_dir=%~dp0"
 set language=en
 set "difficulty="
 set "difficulty_saved="
 set "difficulty_file="
 if defined APPDATA set "difficulty_file=%APPDATA%\kryziukai-nuliukai.bat\difficulty.txt"
-set "kalbos_failas=%~dp0Language\%language%.csv"
+set "kalbos_failas=%script_dir%Language\%language%.csv"
 rem Detect Windows 2000 before changing the console code page.
 set "legacy_console="
 ver | findstr /R "5\.0" >NUL
@@ -70,6 +72,8 @@ goto skaityti_komandines_eilutes_parametra
 
 :setup_colors
 if not defined use_color goto pradzia
+rem ANSICON supplies ANSI support even in the legacy ASCII console.
+if defined ANSICON goto ansi_colors
 if defined legacy_console goto pradzia
 rem ANSI-aware terminals do not need console mode changes.
 if defined WT_SESSION goto ansi_colors
@@ -95,8 +99,9 @@ set "c_result=%esc%[96m"
 set "c_win=%esc%[92m"
 goto pradzia
 :ikelti_kalba
-rem English contains only ASCII; avoid UTF-8 translation decoding on legacy consoles.
-if defined legacy_console set "kalbos_failas=%~dp0Language\en.csv"
+rem Prefer an optional ASCII translation on legacy consoles; otherwise use English.
+if defined legacy_console set "kalbos_failas=%script_dir%Language\en.csv"
+if defined legacy_console if exist "%script_dir%Language\%language%.txt" set "kalbos_failas=%script_dir%Language\%language%.txt"
 for /f "usebackq tokens=1,* delims=, eol=;" %%a in ("%kalbos_failas%") do (
     set vertimas[%%a]=%%b
 )
@@ -105,11 +110,11 @@ exit /b
 :nustatyti_kalba
 set language=%1
 shift
-set "kalbos_failas=%~dp0Language\%language%.csv"
+set "kalbos_failas=%script_dir%Language\%language%.csv"
 if not exist "%kalbos_failas%" (
     set language=en
     echo "Warning: language not found. Switching to en."
-    set "kalbos_failas=%~dp0Language\%language%.csv"
+    set "kalbos_failas=%script_dir%Language\en.csv"
 )
 goto skaityti_komandines_eilutes_parametra
 
@@ -184,20 +189,20 @@ goto board_messages
 for /L %%n in (1,1,9) do call :ascii_cell %%n
 cls
 echo.
-echo     TIC TAC TOE
+echo     %c_x%TIC%c_result% TAC %c_o%TOE%c_reset%
 call echo     %vertimas[difficulty.label]%: %%vertimas[difficulty.%difficulty%]%%
-echo     X = %vertimas[ui.player]%    O = %vertimas[ui.computer]%
+echo     %c_x%X = %vertimas[ui.player]%%c_reset%    %c_o%O = %vertimas[ui.computer]%%c_reset%
 echo.
-echo     +-------+-------+-------+
-echo     ^|  %a1%  ^|  %a2%  ^|  %a3%  ^|
-echo     ^|   1   ^|   2   ^|   3   ^|
-echo     +-------+-------+-------+
-echo     ^|  %a4%  ^|  %a5%  ^|  %a6%  ^|
-echo     ^|   4   ^|   5   ^|   6   ^|
-echo     +-------+-------+-------+
-echo     ^|  %a7%  ^|  %a8%  ^|  %a9%  ^|
-echo     ^|   7   ^|   8   ^|   9   ^|
-echo     +-------+-------+-------+
+echo     %c_board%+-------+-------+-------+%c_reset%
+echo     %c_board%^|  %a1%  ^|  %a2%  ^|  %a3%  ^|%c_reset%
+echo     %c_board%^|   1   ^|   2   ^|   3   ^|%c_reset%
+echo     %c_board%+-------+-------+-------+%c_reset%
+echo     %c_board%^|  %a4%  ^|  %a5%  ^|  %a6%  ^|%c_reset%
+echo     %c_board%^|   4   ^|   5   ^|   6   ^|%c_reset%
+echo     %c_board%+-------+-------+-------+%c_reset%
+echo     %c_board%^|  %a7%  ^|  %a8%  ^|  %a9%  ^|%c_reset%
+echo     %c_board%^|   7   ^|   8   ^|   9   ^|%c_reset%
+echo     %c_board%+-------+-------+-------+%c_reset%
 echo.
 echo     1 - 9: %vertimas[ui.choose]%
 echo     ENTER: %vertimas[ui.confirm]%
@@ -572,6 +577,10 @@ exit /b
 
 :ascii_cell
 call set "cell=%%e%1%%"
-set "a%1= %cell% "
-if defined winner%1 set "a%1=[%cell%]"
+set "mark_color=%c_board%"
+if "%cell%"=="X" set "mark_color=%c_x%"
+if "%cell%"=="O" set "mark_color=%c_o%"
+if defined winner%1 if defined c_win set "mark_color=%c_win%"
+set "a%1=%mark_color% %cell% %c_board%"
+if defined winner%1 if not defined c_win set "a%1=[%cell%]"
 exit /b
