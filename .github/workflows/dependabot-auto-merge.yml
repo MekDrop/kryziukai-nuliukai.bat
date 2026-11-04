@@ -1,0 +1,39 @@
+name: Auto-merge Dependabot
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  auto-merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # Never check out or execute PR code in this privileged workflow.
+      - name: Enable auto-merge for the tested Dependabot commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          for number in $(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq '.pull_requests[].number'); do
+            pr=$(gh api "repos/$GH_REPO/pulls/$number")
+            if jq -e --arg sha "$TESTED_SHA" --arg repo "$GH_REPO" '
+              .state == "open" and .draft == false and
+              .user.login == "dependabot[bot]" and
+              .base.ref == "master" and
+              .head.repo.full_name == $repo and .head.sha == $sha
+            ' <<< "$pr" > /dev/null; then
+              gh pr merge "$number" --auto --squash --match-head-commit "$TESTED_SHA"
+            fi
+          done
