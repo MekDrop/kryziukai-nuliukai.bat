@@ -21,11 +21,13 @@ jobs:
       - name: Enable auto-merge for the tested Dependabot commit
         env:
           GH_TOKEN: ${{ github.token }}
+          MERGE_TOKEN: ${{ secrets.DEPENDABOT_MERGE_TOKEN }}
           GH_REPO: ${{ github.repository }}
           RUN_ID: ${{ github.event.workflow_run.id }}
           TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
+          missing_token=false
           for number in $(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq '.pull_requests[].number'); do
             pr=$(gh api "repos/$GH_REPO/pulls/$number")
             if jq -e --arg sha "$TESTED_SHA" --arg repo "$GH_REPO" '
@@ -34,6 +36,15 @@ jobs:
               .base.ref == "master" and
               .head.repo.full_name == $repo and .head.sha == $sha
             ' <<< "$pr" > /dev/null; then
-              gh pr merge "$number" --auto --squash --match-head-commit "$TESTED_SHA"
+              # GITHUB_TOKEN cannot merge changes to workflow files. Keep API
+              # reads on that token; use the optional elevated token only to merge.
+              files=$(gh api --paginate "repos/$GH_REPO/pulls/$number/files" --jq '.[] | .filename, (.previous_filename // empty)')
+              if [[ -z "$MERGE_TOKEN" ]] && grep -q '^\.github/workflows/' <<< "$files"; then
+                echo "::error::PR #$number changes workflows. Configure the DEPENDABOT_MERGE_TOKEN Actions secret with Contents, Pull requests, and Workflows write permissions."
+                missing_token=true
+                continue
+              fi
+              GH_TOKEN="${MERGE_TOKEN:-$GH_TOKEN}" gh pr merge "$number" --auto --squash --match-head-commit "$TESTED_SHA"
             fi
           done
+          if [[ "$missing_token" == true ]]; then exit 1; fi
