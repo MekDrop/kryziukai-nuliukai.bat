@@ -21,6 +21,9 @@ setlocal EnableExtensions DisableDelayedExpansion
 set app_name=%0
 set language=en
 set "difficulty="
+set "difficulty_saved="
+set "difficulty_file="
+if defined APPDATA set "difficulty_file=%APPDATA%\kryziukai-nuliukai.bat\difficulty.txt"
 set "kalbos_failas=%~dp0Language\%language%.csv"
 rem Detect Windows 2000 before changing the console code page.
 set "legacy_console="
@@ -127,6 +130,7 @@ goto pabaiga
 rem Here we setting default values for all of our variables
 call :ikelti_kalba
 if not defined difficulty call :choose_difficulty
+if not defined difficulty_saved call :remember_difficulty
 set tuscias_langelis=.
 set zaidejas1=X
 set zaidejas2=O
@@ -212,8 +216,26 @@ if NOT "%klaida%"=="" (
 rem Here it's possible enter where to place mark
 set zenklas=%zaidejas1%
 echo     %c_x%X  %vertimas[ui.turn]%%c_reset%
+echo.
+setlocal EnableDelayedExpansion
+set "move_hint=!vertimas[ui.exit]!"
+echo     !move_hint:exit=%c_result%exit%c_reset%!
+endlocal
+set "ejimas="
 set /P "ejimas=%c_x%    > %c_reset%"
-goto tikrink
+rem Delayed expansion keeps typed shell characters out of command parsing.
+setlocal EnableDelayedExpansion
+if /I "!ejimas!"=="exit" (
+    endlocal
+    goto pabaiga
+)
+for /L %%n in (1,1,9) do if "!ejimas!"=="%%n" (
+    endlocal
+    goto tikrink
+)
+endlocal
+set "klaida=%vertimas[tikrink.bloga_koordinate]%"
+goto braizom
 
 :tikrink
 set klaida=
@@ -417,19 +439,43 @@ endlocal & set "safe="
 exit /b
 
 :choose_difficulty
+setlocal EnableDelayedExpansion
+set "difficulty_default=2"
+set "saved_choice="
+if defined difficulty_file if exist "!difficulty_file!" (
+    (set /p "saved_choice=" < "!difficulty_file!") 2>NUL
+)
+for %%n in (1 2 3) do if "!saved_choice!"=="%%n" set "difficulty_default=%%n"
+:difficulty_prompt
 echo.
-echo %vertimas[difficulty.prompt]%
-echo   1. %vertimas[difficulty.easy]%
-echo   2. %vertimas[difficulty.normal]%
-echo   3. %vertimas[difficulty.hard]%
-set "difficulty_choice="
+echo !vertimas[difficulty.prompt]!
+echo   1. !vertimas[difficulty.easy]!
+echo   2. !vertimas[difficulty.normal]!
+echo   3. !vertimas[difficulty.hard]!
+echo !vertimas[difficulty.default]! !difficulty_default!
+set "difficulty_choice=!difficulty_default!"
 set /p "difficulty_choice=> "
-if "%difficulty_choice%"=="1" set "difficulty=easy"
-if "%difficulty_choice%"=="2" set "difficulty=normal"
-if "%difficulty_choice%"=="3" set "difficulty=hard"
-if defined difficulty exit /b
-echo %vertimas[difficulty.invalid]%
-goto choose_difficulty
+set "difficulty_selected="
+if "!difficulty_choice!"=="1" set "difficulty_selected=easy"
+if "!difficulty_choice!"=="2" set "difficulty_selected=normal"
+if "!difficulty_choice!"=="3" set "difficulty_selected=hard"
+if defined difficulty_selected goto difficulty_chosen
+echo !vertimas[difficulty.invalid]!
+goto difficulty_prompt
+:difficulty_chosen
+endlocal & set "difficulty=%difficulty_selected%"
+exit /b
+
+:remember_difficulty
+set "difficulty_saved=1"
+if not defined difficulty_file exit /b
+set "saved_choice=2"
+if /I "%difficulty%"=="easy" set "saved_choice=1"
+if /I "%difficulty%"=="hard" set "saved_choice=3"
+rem Preferences are optional: a read-only profile must not prevent playing.
+if not exist "%APPDATA%\kryziukai-nuliukai.bat\" md "%APPDATA%\kryziukai-nuliukai.bat" 2>NUL
+(>"%difficulty_file%" echo %saved_choice%) 2>NUL
+exit /b 0
 
 :laimejimas
 for %%l in (123 456 789 147 258 369 159 357) do call :mark_winning_line %%l
@@ -453,13 +499,25 @@ goto braizom
 
 :arzaistidar
 echo            %vertimas[arzaistidar.klausimas]%
+set "ats="
 set /p "ats=           > "
-if "%ats%" == "%vertimas[arzaistidar.taip]%" goto pradzia
-if "%ats%" == "%vertimas[arzaistidar.taip]:~0,1%" goto pradzia
-if "%ats%" == "%vertimas[arzaistidar.ne]%" goto pabaiga
-if "%ats%" == "%vertimas[arzaistidar.ne]:~0,1%" goto pabaiga
+setlocal EnableDelayedExpansion
+if not defined ats goto replay_yes
+if /I "!ats!"=="!vertimas[arzaistidar.taip]!" goto replay_yes
+if /I "!ats!"=="!vertimas[arzaistidar.taip]:~0,1!" goto replay_yes
+if /I "!ats!"=="!vertimas[arzaistidar.ne]!" goto replay_no
+if /I "!ats!"=="!vertimas[arzaistidar.ne]:~0,1!" goto replay_no
+endlocal
 cls
 goto arzaistidar
+
+:replay_yes
+endlocal
+goto pradzia
+
+:replay_no
+endlocal
+goto pabaiga
 
 :pabaiga
 exit /b
