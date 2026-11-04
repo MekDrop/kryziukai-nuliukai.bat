@@ -32,7 +32,7 @@ jobs:
           mtype -i dist/game.img ::/kryz.bat | tr -d '\r' > /tmp/kryz-from-floppy.bat
           tr -d '\r' < kryz.bat | cmp - /tmp/kryz-from-floppy.bat
       - name: Upload built website
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
   deploy:
