@@ -16,12 +16,14 @@ REM ---------------------------------------- NOTE ------------------------------
 REM
 REM    This app is can run only on Windows 2000 or newer
 
+rem Setting default data
 setlocal DisableDelayedExpansion
 set app_name=%0
 set language=en
 set "difficulty="
 set kalbos_failas=.\Language\%language%.csv
 chcp 65001 >NUL
+rem Try colors by default; /MONO and NO_COLOR opt out.
 set "use_color=1"
 if defined WT_SESSION set "use_color=1"
 if defined ANSICON set "use_color=1"
@@ -34,6 +36,7 @@ set "c_o="
 set "c_error="
 set "c_result="
 
+rem Parsing command line options
 :skaityti_komandines_eilutes_parametra
 SET parsed_param=%1
 shift
@@ -58,9 +61,12 @@ goto skaityti_komandines_eilutes_parametra
 
 :setup_colors
 if not defined use_color goto pradzia
+rem Known ANSI terminals already support escape sequences.
 if defined WT_SESSION goto ansi_colors
 if defined ANSICON goto ansi_colors
 if /I "%ConEmuANSI%"=="ON" goto ansi_colors
+rem Enable ENABLE_VIRTUAL_TERMINAL_PROCESSING on the shared console output.
+rem Encoded PowerShell calls GetStdHandle(-11), GetConsoleMode, SetConsoleMode(mode OR 4).
 powershell.exe -NoLogo -NoProfile -NonInteractive -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlAHMAcABhAGMAZQAgAEsAcgB5AHoAIAAtAE4AYQBtAGUAIABDAG8AbgBzAG8AbABlACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAQAAnAAoAWwBTAHkAcwB0AGUAbQAuAFIAdQBuAHQAaQBtAGUALgBJAG4AdABlAHIAbwBwAFMAZQByAHYAaQBjAGUAcwAuAEQAbABsAEkAbQBwAG8AcgB0ACgAIgBrAGUAcgBuAGUAbAAzADIALgBkAGwAbAAiACkAXQAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAGkAbgB0ACAAbgApADsACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAuAGQAbABsACIAKQBdACAAcAB1AGIAbABpAGMAIABzAHQAYQB0AGkAYwAgAGUAeAB0AGUAcgBuACAAYgBvAG8AbAAgAEcAZQB0AEMAbwBuAHMAbwBsAGUATQBvAGQAZQAoAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABoACwAIABvAHUAdAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKAFsAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMALgBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABiAG8AbwBsACAAUwBlAHQAQwBvAG4AcwBvAGwAZQBNAG8AZABlACgAUwB5AHMAdABlAG0ALgBJAG4AdABQAHQAcgAgAGgALAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKACcAQAAKACQAaABhAG4AZABsAGUAIAA9ACAAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAC0AMQAxACkACgBbAHUAaQBuAHQAMwAyAF0AJABtAG8AZABlACAAPQAgADAACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIABbAHIAZQBmAF0AJABtAG8AZABlACkAKQAgAHsAIABlAHgAaQB0ACAAMQAgAH0ACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBTAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIAAoACQAbQBvAGQAZQAgAC0AYgBvAHIAIAA0ACkAKQApACAAewAgAGUAeABpAHQAIAAxACAAfQA= 2>NUL
 if errorlevel 1 goto pradzia
 :ansi_colors
@@ -103,6 +109,7 @@ echo.
 goto pabaiga
 
 :pradzia
+rem Here we setting default values for all of our variables
 call :ikelti_kalba
 if not defined difficulty call :choose_difficulty
 set tuscias_langelis=.
@@ -123,6 +130,8 @@ set emsg=
 goto braizom
 
 :braizom
+rem This part is used for drawing the board
+rem We need to specify value for griztam variable, before using this part (is use label names)
 for %%n in (1 2 3 4 5 6 7 8 9) do call :cell_text %%n
 cls
 echo.
@@ -148,6 +157,7 @@ echo     %c_board%┃  %b7%  │  %b8%  │  %b9%  ┃%c_reset%    %vertimas[ui.
 echo     %c_board%┗━━━━━━━┷━━━━━━━┷━━━━━━━┛%c_reset%
 echo.
 echo     %c_board%━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%c_reset%
+rem If there was an error, we show this here
 if NOT "%e_spc%"=="" (
    echo            %c_result%%emsg%%c_reset%
    echo.
@@ -157,6 +167,7 @@ if NOT "%klaida%"=="" (
    echo            %c_error%[!] %vertimas[braizom.klaida]% %klaida%%c_reset%
    echo.
 )
+rem Here it's possible enter where to place mark
 set zenklas=%zaidejas1%
 echo     %c_x%●  %vertimas[ui.turn]%%c_reset%
 set /P "ejimas=%c_x%    › %c_reset%"
@@ -227,12 +238,16 @@ if "%ejimas%"=="9" (
 	    set klaida=%vertimas[tikrink.jau_egzistuoja]%
     )
 )
+rem if entered number is lower than 1, also that was an error!
 if /I %ejimas% LSS 1 (
     set klaida=%vertimas[tikrink.bloga_koordinate]%
 )
+rem if entered number is greater than 9, also that was an error!
 if /I %ejimas% GTR 9 (
     set klaida=%vertimas[tikrink.bloga_koordinate]%
 )
+rem checking if there was a previous error
+rem if that was the computer turn, we hide all errors
 if NOT "%klaida%"=="" (
     if "%zenklas%"=="%zaidejas1%" (
 	    goto braizom
@@ -241,6 +256,7 @@ if NOT "%klaida%"=="" (
     )
 )
 
+rem here we are checking if somebody wins
 if "%e1%%e2%%e3%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
 if "%e4%%e5%%e6%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
 if "%e7%%e8%%e9%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
@@ -272,11 +288,14 @@ if NOT "%e1%"=="%tuscias_langelis%" (
    )
 )
 
+rem if you are in this place, it means you have places a mark sucessfully!
+rem now we thinking what to doo next
 if "%zenklas%"=="%zaidejas1%" goto kompiuteris
 set griztam=ivedimas
 goto braizom
 
 :kompiuteris
+rem here is a computer turn
 set zenklas=%zaidejas2%
 set "ejimas="
 if /I "%difficulty%"=="easy" goto random_move
