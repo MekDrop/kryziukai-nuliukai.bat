@@ -11,7 +11,7 @@ tikrink.bloga_koordinate,You have entered a bad coordinate
 laimejimas.zaidejas,Player wins!
 laimejimas.kompiuteris,Computer wins :P
 lygiosios.lygiosios,Draw
-arzaistidar.klausimas,Do You want to play again (yes/no)?
+arzaistidar.klausimas,Do You want to play again (yes/no, Enter = yes)?
 arzaistidar.taip,yes
 arzaistidar.ne,no
 
@@ -21,6 +21,7 @@ ui.computer,Computer
 ui.turn,Your turn
 
 ui.choose,Choose square
+ui.exit,Enter a square (1-9) or type exit to quit:
 ui.confirm,Place mark
 
 difficulty.label,Difficulty
@@ -30,3 +31,5 @@ difficulty.normal,Normal - wins and blocks
 difficulty.hard,Hard - unbeatable
 difficulty.invalid,Choose 1-3 or use /D easy /D normal /D hard.
 difficulty.help,Computer difficulty: easy / normal / hard (otherwise prompts)
+
+difficulty.default,Press Enter to use the default:

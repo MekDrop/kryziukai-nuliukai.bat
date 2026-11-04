@@ -10,7 +10,7 @@ Kryziukai-Nuliukai.bat
 Difficulty
 ==========
 
-Choose a difficulty when starting the game, or pass `/D easy`, `/D normal`, or `/D hard` (for example, `kryz.bat /L lt /D hard /MONO`). The selection stays active when playing again.
+Choose a difficulty when starting the game, or pass `/D easy`, `/D normal`, or `/D hard` (for example, `kryz.bat /L lt /D hard /MONO`). Press Enter to accept the displayed default: Normal on the first run, then your last selected difficulty on later runs. Choices made with `/D` are remembered too. The selection stays active when playing again. Preferences are stored in `%APPDATA%\kryziukai-nuliukai.bat\difficulty.txt`; if the profile is not writable, the game still works without saving the choice.
 
 - **Easy** picks a random free square.
 - **Normal** takes an immediate win, blocks an immediate loss, then picks a random free square.
@@ -32,3 +32,9 @@ X is cyan, O is magenta, the board is muted gray, and errors are red.
 The screenshot shows actual game output rendered with xterm.js using a Windows console color palette.
 
 Winning marks turn bright green on the final board when ANSI colors are enabled. Monochrome mode surrounds each winning glyph with full-height brackets. ASCII mode uses `[X]` or `[O]`.
+
+
+Game controls
+=============
+
+Enter a square number (1-9), or type `exit` at any move prompt to quit the game. At the play-again prompt, enter the full answer or its first letter: `yes`/`y` or `no`/`n` in English, `taip`/`t` or `ne`/`n` in Lithuanian. Press Enter without typing an answer to play again. Commands and replay answers are case-insensitive; press Enter to confirm.

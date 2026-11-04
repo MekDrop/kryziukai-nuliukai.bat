@@ -11,7 +11,7 @@ tikrink.bloga_koordinate,Ivesta bloga kordinate
 laimejimas.zaidejas,Zaidejas laimejo
 laimejimas.kompiuteris,Kompiuteris laimejo
 lygiosios.lygiosios,Lygiosios
-arzaistidar.klausimas,Ar norite zaisti dar (taip/ne)?
+arzaistidar.klausimas,Ar norite zaisti dar (taip/ne, Enter = taip)?
 arzaistidar.taip,taip
 arzaistidar.ne,ne
 
@@ -21,6 +21,7 @@ ui.computer,Kompiuteris
 ui.turn,Tavo ejimas
 
 ui.choose,Rinkis langeli
+ui.exit,Ivesk langeli (1-9) arba exit jei nori baigti:
 ui.confirm,Dek zenkla
 
 difficulty.label,Sunkumas
@@ -30,3 +31,5 @@ difficulty.normal,Vidutinis - laimi ir blokuoja
 difficulty.hard,Sunkus - nenugalimas
 difficulty.invalid,Rinkis 1-3 arba naudok /D easy /D normal /D hard.
 difficulty.help,Kompiuterio sunkumas: easy / normal / hard (kitaip klausiama)
+
+difficulty.default,Spausk Enter numatytam pasirinkimui:
