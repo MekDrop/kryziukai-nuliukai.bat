@@ -1,11 +1,11 @@
-﻿
+
 parodyti_pagalba.sintakse,Syntax:
 parodyti_pagalba.kodas,CODE
 parodyti_pagalba.parametrai,Parameters:
 parodyti_pagalba.parametras.pagalba,Show help about this command (what you can see now)
 parodyti_pagalba.parametras.kalba,Uses specific language (code is language short name; if not specified English is used)
 braizom.klaida,Error:
-braizom.iveskite_kordinate,Enter coordinate (1-9):
+braizom.iveskite_kordinate,Choose a square [1-9]
 tikrink.jau_egzistuoja,Such already exists!
 tikrink.bloga_koordinate,You have entered a bad coordinate
 laimejimas.zaidejas,Player wins!
@@ -14,3 +14,11 @@ lygiosios.lygiosios,Draw
 arzaistidar.klausimas,Do You want to play again (yes/no)?
 arzaistidar.taip,yes
 arzaistidar.ne,no
+
+ui.player,You
+ui.computer,Computer
+
+ui.turn,Your turn
+
+ui.choose,Choose square
+ui.confirm,Place mark
