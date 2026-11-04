@@ -30,3 +30,5 @@ Windows 2000 compatibility still needs execution testing on an actual Windows 20
 X is cyan, O is magenta, the board is muted gray, and errors are red.
 
 The screenshot shows actual game output rendered with xterm.js using a Windows console color palette.
+
+Winning marks turn bright green on the final board when ANSI colors are enabled. Monochrome mode surrounds each winning glyph with full-height brackets. ASCII mode uses `[X]` or `[O]`.

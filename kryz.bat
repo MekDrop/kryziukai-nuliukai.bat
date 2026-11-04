@@ -39,6 +39,7 @@ set "c_x="
 set "c_o="
 set "c_error="
 set "c_result="
+set "c_win="
 
 rem Parsing command line options
 :skaityti_komandines_eilutes_parametra
@@ -88,6 +89,7 @@ set "c_x=%esc%[96m"
 set "c_o=%esc%[95m"
 set "c_error=%esc%[91m"
 set "c_result=%esc%[96m"
+set "c_win=%esc%[92m"
 goto pradzia
 :ikelti_kalba
 rem English contains only ASCII; avoid UTF-8 translation decoding on legacy consoles.
@@ -140,6 +142,7 @@ set e9=%tuscias_langelis%
 set klaida=
 set e_spc=
 set emsg=
+for /L %%n in (1,1,9) do set "winner%%n="
 goto braizom
 
 :braizom
@@ -157,23 +160,24 @@ echo.
 call echo     %vertimas[difficulty.label]%: %%vertimas[difficulty.%difficulty%]%%
 echo.
 echo     %c_board%┏━━━━━━━┯━━━━━━━┯━━━━━━━┓%c_reset%
-echo     %c_board%┃  %t1%  │  %t2%  │  %t3%  ┃%c_reset%    %c_x%╳  %vertimas[ui.player]%%c_reset%
-echo     %c_board%┃  %d1%  │  %d2%  │  %d3%  ┃%c_reset%
-echo     %c_board%┃  %b1%  │  %b2%  │  %b3%  ┃%c_reset%    %c_o%○  %vertimas[ui.computer]%%c_reset%
+echo     %c_board%┃%t1%│%t2%│%t3%┃%c_reset%    %c_x%╳  %vertimas[ui.player]%%c_reset%
+echo     %c_board%┃%d1%│%d2%│%d3%┃%c_reset%
+echo     %c_board%┃%b1%│%b2%│%b3%┃%c_reset%    %c_o%○  %vertimas[ui.computer]%%c_reset%
 echo     %c_board%┠───────┼───────┼───────┨%c_reset%
-echo     %c_board%┃  %t4%  │  %t5%  │  %t6%  ┃%c_reset%    %c_board%──────────────%c_reset%
-echo     %c_board%┃  %d4%  │  %d5%  │  %d6%  ┃%c_reset%
-echo     %c_board%┃  %b4%  │  %b5%  │  %b6%  ┃%c_reset%    %c_result%1 - 9%c_reset%
+echo     %c_board%┃%t4%│%t5%│%t6%┃%c_reset%    %c_board%──────────────%c_reset%
+echo     %c_board%┃%d4%│%d5%│%d6%┃%c_reset%
+echo     %c_board%┃%b4%│%b5%│%b6%┃%c_reset%    %c_result%1 - 9%c_reset%
 echo     %c_board%┠───────┼───────┼───────┨%c_reset%    %vertimas[ui.choose]%
-echo     %c_board%┃  %t7%  │  %t8%  │  %t9%  ┃%c_reset%
-echo     %c_board%┃  %d7%  │  %d8%  │  %d9%  ┃%c_reset%    %c_result%ENTER%c_reset%
-echo     %c_board%┃  %b7%  │  %b8%  │  %b9%  ┃%c_reset%    %vertimas[ui.confirm]%
+echo     %c_board%┃%t7%│%t8%│%t9%┃%c_reset%
+echo     %c_board%┃%d7%│%d8%│%d9%┃%c_reset%    %c_result%ENTER%c_reset%
+echo     %c_board%┃%b7%│%b8%│%b9%┃%c_reset%    %vertimas[ui.confirm]%
 echo     %c_board%┗━━━━━━━┷━━━━━━━┷━━━━━━━┛%c_reset%
 echo.
 echo     %c_board%━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%c_reset%
 goto board_messages
 
 :ascii_board
+for /L %%n in (1,1,9) do call :ascii_cell %%n
 cls
 echo.
 echo     TIC TAC TOE
@@ -181,13 +185,13 @@ call echo     %vertimas[difficulty.label]%: %%vertimas[difficulty.%difficulty%]%
 echo     X = %vertimas[ui.player]%    O = %vertimas[ui.computer]%
 echo.
 echo     +-------+-------+-------+
-echo     ^|   %e1%   ^|   %e2%   ^|   %e3%   ^|
+echo     ^|  %a1%  ^|  %a2%  ^|  %a3%  ^|
 echo     ^|   1   ^|   2   ^|   3   ^|
 echo     +-------+-------+-------+
-echo     ^|   %e4%   ^|   %e5%   ^|   %e6%   ^|
+echo     ^|  %a4%  ^|  %a5%  ^|  %a6%  ^|
 echo     ^|   4   ^|   5   ^|   6   ^|
 echo     +-------+-------+-------+
-echo     ^|   %e7%   ^|   %e8%   ^|   %e9%   ^|
+echo     ^|  %a7%  ^|  %a8%  ^|  %a9%  ^|
 echo     ^|   7   ^|   8   ^|   9   ^|
 echo     +-------+-------+-------+
 echo.
@@ -428,6 +432,7 @@ echo %vertimas[difficulty.invalid]%
 goto choose_difficulty
 
 :laimejimas
+for %%l in (123 456 789 147 258 369 159 357) do call :mark_winning_line %%l
 if "%zenklas%"=="%zaidejas1%" (
     set emsg=%vertimas[laimejimas.zaidejas]%
 ) else (
@@ -461,17 +466,54 @@ exit /b
 
 :cell_text
 call set "cell=%%e%1%%"
+set "mark_color=%c_x%"
+if "%cell%"=="O" set "mark_color=%c_o%"
+if defined winner%1 set "mark_color=%c_win%"
 set "t%1=   "
 set "d%1=%c_result% %1 %c_board%"
 set "b%1=   "
 if "%cell%"=="X" (
-    set "t%1=%c_x%╲ ╱%c_board%"
-    set "d%1=%c_x% ╳ %c_board%"
-    set "b%1=%c_x%╱ ╲%c_board%"
+    set "t%1=%mark_color%╲ ╱%c_board%"
+    set "d%1=%mark_color% ╳ %c_board%"
+    set "b%1=%mark_color%╱ ╲%c_board%"
 )
 if "%cell%"=="O" (
-    set "t%1=%c_o%╭─╮%c_board%"
-    set "d%1=%c_o%│ │%c_board%"
-    set "b%1=%c_o%╰─╯%c_board%"
+    set "t%1=%mark_color%╭─╮%c_board%"
+    set "d%1=%mark_color%│ │%c_board%"
+    set "b%1=%mark_color%╰─╯%c_board%"
 )
+rem Full-height brackets surround the glyph without changing the cell width.
+if not defined c_win if defined winner%1 (
+    call set "t%1= ┌%%t%1%%┐ "
+    call set "d%1= │%%d%1%%│ "
+    call set "b%1= └%%b%1%%┘ "
+    exit /b
+)
+call set "t%1=  %%t%1%%  "
+call set "d%1=  %%d%1%%  "
+call set "b%1=  %%b%1%%  "
+exit /b
+
+:mark_winning_line
+setlocal EnableDelayedExpansion
+set "line=%1"
+set "marks="
+for /L %%i in (0,1,2) do for %%n in ("!line:~%%i,1!") do set "marks=!marks!!e%%~n!"
+if not "!marks!"=="%zenklas%%zenklas%%zenklas%" (
+    endlocal
+    exit /b
+)
+endlocal
+for /L %%i in (0,1,2) do call :mark_winning_cell %1 %%i
+exit /b
+
+:mark_winning_cell
+set "line=%1"
+call set "winner%%line:~%2,1%%=1"
+exit /b
+
+:ascii_cell
+call set "cell=%%e%1%%"
+set "a%1= %cell% "
+if defined winner%1 set "a%1=[%cell%]"
 exit /b
