@@ -12,6 +12,9 @@ REM    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR A
 REM    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 REM     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 REM
+REM ---------------------------------------- NOTE -------------------------------------------------------
+REM
+REM    This app is can run only on Windows 2000 or newer
 
 setlocal DisableDelayedExpansion
 set app_name=%0
