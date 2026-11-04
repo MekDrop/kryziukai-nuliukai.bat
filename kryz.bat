@@ -17,13 +17,17 @@ REM
 REM    This app is can run only on Windows 2000 or newer
 
 rem Setting default data
-setlocal DisableDelayedExpansion
+setlocal EnableExtensions DisableDelayedExpansion
 set app_name=%0
 set language=en
 set "difficulty="
-set kalbos_failas=.\Language\%language%.csv
-chcp 65001 >NUL
-rem Try colors by default; /MONO and NO_COLOR opt out.
+set "kalbos_failas=%~dp0Language\%language%.csv"
+rem Detect Windows 2000 before changing the console code page.
+set "legacy_console="
+ver | findstr /R "5\.0" >NUL
+if not errorlevel 1 set "legacy_console=1"
+if not defined legacy_console chcp 65001 >NUL
+rem Try colors automatically; unsupported consoles fall back to plain text.
 set "use_color=1"
 if defined WT_SESSION set "use_color=1"
 if defined ANSICON set "use_color=1"
@@ -43,6 +47,7 @@ shift
 if "%parsed_param%"=="" goto setup_colors
 if /I "%parsed_param%"=="/COLOR" set "use_color=1"
 if /I "%parsed_param%"=="/MONO" set "use_color="
+if /I "%parsed_param%"=="/ASCII" set "legacy_console=1"
 if "%parsed_param%"=="/?" goto parodyti_pagalba
 if "%parsed_param%"=="/L" goto nustatyti_kalba
 if /I "%parsed_param%"=="/D" goto set_difficulty
@@ -61,14 +66,20 @@ goto skaityti_komandines_eilutes_parametra
 
 :setup_colors
 if not defined use_color goto pradzia
-rem Known ANSI terminals already support escape sequences.
+if defined legacy_console goto pradzia
+rem ANSI-aware terminals do not need console mode changes.
 if defined WT_SESSION goto ansi_colors
 if defined ANSICON goto ansi_colors
 if /I "%ConEmuANSI%"=="ON" goto ansi_colors
-rem Enable ENABLE_VIRTUAL_TERMINAL_PROCESSING on the shared console output.
-rem Encoded PowerShell calls GetStdHandle(-11), GetConsoleMode, SetConsoleMode(mode OR 4).
-powershell.exe -NoLogo -NoProfile -NonInteractive -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlAHMAcABhAGMAZQAgAEsAcgB5AHoAIAAtAE4AYQBtAGUAIABDAG8AbgBzAG8AbABlACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAQAAnAAoAWwBTAHkAcwB0AGUAbQAuAFIAdQBuAHQAaQBtAGUALgBJAG4AdABlAHIAbwBwAFMAZQByAHYAaQBjAGUAcwAuAEQAbABsAEkAbQBwAG8AcgB0ACgAIgBrAGUAcgBuAGUAbAAzADIALgBkAGwAbAAiACkAXQAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAGkAbgB0ACAAbgApADsACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAuAGQAbABsACIAKQBdACAAcAB1AGIAbABpAGMAIABzAHQAYQB0AGkAYwAgAGUAeAB0AGUAcgBuACAAYgBvAG8AbAAgAEcAZQB0AEMAbwBuAHMAbwBsAGUATQBvAGQAZQAoAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABoACwAIABvAHUAdAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKAFsAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMALgBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABiAG8AbwBsACAAUwBlAHQAQwBvAG4AcwBvAGwAZQBNAG8AZABlACgAUwB5AHMAdABlAG0ALgBJAG4AdABQAHQAcgAgAGgALAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKACcAQAAKACQAaABhAG4AZABsAGUAIAA9ACAAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAC0AMQAxACkACgBbAHUAaQBuAHQAMwAyAF0AJABtAG8AZABlACAAPQAgADAACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIABbAHIAZQBmAF0AJABtAG8AZABlACkAKQAgAHsAIABlAHgAaQB0ACAAMQAgAH0ACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBTAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIAAoACQAbQBvAGQAZQAgAC0AYgBvAHIAIAA0ACkAKQApACAAewAgAGUAeABpAHQAIAAxACAAfQA= 2>NUL
+rem Native VT processing is available on newer Windows 10 builds and Windows 11.
+rem Never invoke PowerShell on Windows 2000 or other pre-Windows-10 systems.
+ver | findstr /R "10\.0\." >NUL
 if errorlevel 1 goto pradzia
+if not exist "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" goto pradzia
+rem Enable VT on the existing console; SetConsoleMode failure selects plain text.
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlAHMAcABhAGMAZQAgAEsAcgB5AHoAIAAtAE4AYQBtAGUAIABDAG8AbgBzAG8AbABlACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAQAAnAAoAWwBTAHkAcwB0AGUAbQAuAFIAdQBuAHQAaQBtAGUALgBJAG4AdABlAHIAbwBwAFMAZQByAHYAaQBjAGUAcwAuAEQAbABsAEkAbQBwAG8AcgB0ACgAIgBrAGUAcgBuAGUAbAAzADIALgBkAGwAbAAiACkAXQAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAGkAbgB0ACAAbgApADsACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAuAGQAbABsACIAKQBdACAAcAB1AGIAbABpAGMAIABzAHQAYQB0AGkAYwAgAGUAeAB0AGUAcgBuACAAYgBvAG8AbAAgAEcAZQB0AEMAbwBuAHMAbwBsAGUATQBvAGQAZQAoAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABoACwAIABvAHUAdAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKAFsAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMALgBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABiAG8AbwBsACAAUwBlAHQAQwBvAG4AcwBvAGwAZQBNAG8AZABlACgAUwB5AHMAdABlAG0ALgBJAG4AdABQAHQAcgAgAGgALAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKACcAQAAKACQAaABhAG4AZABsAGUAIAA9ACAAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAC0AMQAxACkACgBbAHUAaQBuAHQAMwAyAF0AJABtAG8AZABlACAAPQAgADAACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIABbAHIAZQBmAF0AJABtAG8AZABlACkAKQAgAHsAIABlAHgAaQB0ACAAMQAgAH0ACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBTAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIAAoACQAbQBvAGQAZQAgAC0AYgBvAHIAIAA0ACkAKQApACAAewAgAGUAeABpAHQAIAAxACAAfQA= 2>NUL
+if errorlevel 1 goto pradzia
+
 :ansi_colors
 for /F "delims=" %%e in ('echo prompt $E^| cmd /d /q') do set "esc=%%e"
 set "c_reset=%esc%[0m"
@@ -79,7 +90,9 @@ set "c_error=%esc%[91m"
 set "c_result=%esc%[96m"
 goto pradzia
 :ikelti_kalba
-for /f "tokens=1,* delims=, eol=;" %%a in (%kalbos_failas%) do (
+rem English contains only ASCII; avoid UTF-8 translation decoding on legacy consoles.
+if defined legacy_console set "kalbos_failas=%~dp0Language\en.csv"
+for /f "usebackq tokens=1,* delims=, eol=;" %%a in ("%kalbos_failas%") do (
     set vertimas[%%a]=%%b
 )
 exit /b
@@ -87,11 +100,11 @@ exit /b
 :nustatyti_kalba
 set language=%1
 shift
-set kalbos_failas=.\Language\%language%.csv
-if not exist %kalbos_failas% (
+set "kalbos_failas=%~dp0Language\%language%.csv"
+if not exist "%kalbos_failas%" (
     set language=en
     echo "Warning: language not found. Switching to en."
-    set kalbos_failas=.\Language\%language%.csv
+    set "kalbos_failas=%~dp0Language\%language%.csv"
 )
 goto skaityti_komandines_eilutes_parametra
 
@@ -99,7 +112,7 @@ goto skaityti_komandines_eilutes_parametra
 call :ikelti_kalba
 echo.
 echo %vertimas[parodyti_pagalba.sintakse]%
-echo.   %app_name% [/?] [/L %vertimas[parodyti_pagalba.kodas]%] [/COLOR] [/MONO] [/D easy^|normal^|hard]
+echo.   %app_name% [/?] [/L %vertimas[parodyti_pagalba.kodas]%] [/COLOR] [/MONO] [/ASCII] [/D easy^|normal^|hard]
 echo.
 echo %vertimas[parodyti_pagalba.parametrai]%
 echo.   /D       %vertimas[difficulty.help]%
@@ -132,6 +145,7 @@ goto braizom
 :braizom
 rem This part is used for drawing the board
 rem We need to specify value for griztam variable, before using this part (is use label names)
+if defined legacy_console goto ascii_board
 for %%n in (1 2 3 4 5 6 7 8 9) do call :cell_text %%n
 cls
 echo.
@@ -157,6 +171,30 @@ echo     %c_board%┃  %b7%  │  %b8%  │  %b9%  ┃%c_reset%    %vertimas[ui.
 echo     %c_board%┗━━━━━━━┷━━━━━━━┷━━━━━━━┛%c_reset%
 echo.
 echo     %c_board%━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%c_reset%
+goto board_messages
+
+:ascii_board
+cls
+echo.
+echo     TIC TAC TOE
+call echo     %vertimas[difficulty.label]%: %%vertimas[difficulty.%difficulty%]%%
+echo     X = %vertimas[ui.player]%    O = %vertimas[ui.computer]%
+echo.
+echo     +-------+-------+-------+
+echo     ^|   %e1%   ^|   %e2%   ^|   %e3%   ^|
+echo     ^|   1   ^|   2   ^|   3   ^|
+echo     +-------+-------+-------+
+echo     ^|   %e4%   ^|   %e5%   ^|   %e6%   ^|
+echo     ^|   4   ^|   5   ^|   6   ^|
+echo     +-------+-------+-------+
+echo     ^|   %e7%   ^|   %e8%   ^|   %e9%   ^|
+echo     ^|   7   ^|   8   ^|   9   ^|
+echo     +-------+-------+-------+
+echo.
+echo     1 - 9: %vertimas[ui.choose]%
+echo     ENTER: %vertimas[ui.confirm]%
+echo.
+:board_messages
 rem If there was an error, we show this here
 if NOT "%e_spc%"=="" (
    echo            %c_result%%emsg%%c_reset%
@@ -169,8 +207,8 @@ if NOT "%klaida%"=="" (
 )
 rem Here it's possible enter where to place mark
 set zenklas=%zaidejas1%
-echo     %c_x%●  %vertimas[ui.turn]%%c_reset%
-set /P "ejimas=%c_x%    › %c_reset%"
+echo     %c_x%X  %vertimas[ui.turn]%%c_reset%
+set /P "ejimas=%c_x%    > %c_reset%"
 goto tikrink
 
 :tikrink

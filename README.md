@@ -21,7 +21,11 @@ Hard uses readable batch rules: win, block, then choose a square that prevents t
 Terminal appearance
 ===================
 
-The board uses UTF-8 box-drawing characters. Colors are enabled by default. In the standard Windows console, a small PowerShell call enables ANSI support for the current console; if unavailable, the game falls back to plain text. Windows Terminal, ANSICON and ConEmu support colors directly. Run `kryz.bat /COLOR` to enable ANSI colors explicitly in another compatible terminal, or `kryz.bat /MONO` for plain text. The `NO_COLOR` environment variable disables automatic coloring; `/COLOR` explicitly opts back in.
+Windows 2000 is detected automatically and uses a plain ASCII board, English text, and the existing console code page. This path needs neither PowerShell nor ANSI support. `/ASCII` selects the same display on another Windows version. Language files are resolved relative to the batch file.
+
+Other Windows versions use the UTF-8 board. Colors are automatic in Windows Terminal, ANSICON, and ConEmu. In the standard Windows 10/11 console, an optional PowerShell call enables ANSI processing for the current console. If PowerShell is unavailable or the console rejects ANSI processing, the game falls back to plain text. Windows 2000 and other pre-Windows-10 systems never invoke PowerShell. `/COLOR` requests color detection; `/MONO` disables colors. `NO_COLOR` disables automatic coloring; `/COLOR` opts back in. ASCII mode always uses plain text.
+
+Windows 2000 compatibility still needs execution testing on an actual Windows 2000 installation.
 
 X is cyan, O is magenta, the board is muted gray, and errors are red.
 
