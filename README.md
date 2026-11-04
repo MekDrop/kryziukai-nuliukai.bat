@@ -18,8 +18,6 @@ Choose a difficulty when starting the game, or pass `/D easy`, `/D normal`, or `
 
 Hard uses readable batch rules: win, block, then choose a square that prevents the player from building a fork (two separate winning threats). It prefers the center, corners, then sides when several moves are safe. All AI logic lives in `kryz.bat`; the existing `Language` files supply translations.
 
-On Windows, `node tools/test-ai.cjs` verifies the actual batch decisions for every position reachable against Hard and every possible human game against those decisions. It also checks Normal and Easy, and runs complete English and Lithuanian games with queued responses, including difficulty selection and replay.
-
 Terminal appearance
 ===================
 
