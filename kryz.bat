@@ -12,17 +12,13 @@ REM    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR A
 REM    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 REM     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 REM
-REM ---------------------------------------- NOTE -------------------------------------------------------
-REM
-REM    This app is can run only on Windows 2000 or newer
 
-rem Setting default data
 setlocal DisableDelayedExpansion
 set app_name=%0
 set language=en
+set "difficulty="
 set kalbos_failas=.\Language\%language%.csv
 chcp 65001 >NUL
-rem Try colors by default; /MONO and NO_COLOR opt out.
 set "use_color=1"
 if defined WT_SESSION set "use_color=1"
 if defined ANSICON set "use_color=1"
@@ -35,7 +31,6 @@ set "c_o="
 set "c_error="
 set "c_result="
 
-rem Parsing command line options
 :skaityti_komandines_eilutes_parametra
 SET parsed_param=%1
 shift
@@ -44,16 +39,25 @@ if /I "%parsed_param%"=="/COLOR" set "use_color=1"
 if /I "%parsed_param%"=="/MONO" set "use_color="
 if "%parsed_param%"=="/?" goto parodyti_pagalba
 if "%parsed_param%"=="/L" goto nustatyti_kalba
+if /I "%parsed_param%"=="/D" goto set_difficulty
+goto skaityti_komandines_eilutes_parametra
+
+:set_difficulty
+set "difficulty=%~1"
+shift
+if /I "%difficulty%"=="easy" goto skaityti_komandines_eilutes_parametra
+if /I "%difficulty%"=="normal" goto skaityti_komandines_eilutes_parametra
+if /I "%difficulty%"=="hard" goto skaityti_komandines_eilutes_parametra
+call :ikelti_kalba
+echo %vertimas[difficulty.invalid]%
+set "difficulty="
 goto skaityti_komandines_eilutes_parametra
 
 :setup_colors
 if not defined use_color goto pradzia
-rem Known ANSI terminals already support escape sequences.
 if defined WT_SESSION goto ansi_colors
 if defined ANSICON goto ansi_colors
 if /I "%ConEmuANSI%"=="ON" goto ansi_colors
-rem Enable ENABLE_VIRTUAL_TERMINAL_PROCESSING on the shared console output.
-rem Encoded PowerShell calls GetStdHandle(-11), GetConsoleMode, SetConsoleMode(mode OR 4).
 powershell.exe -NoLogo -NoProfile -NonInteractive -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlAHMAcABhAGMAZQAgAEsAcgB5AHoAIAAtAE4AYQBtAGUAIABDAG8AbgBzAG8AbABlACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAQAAnAAoAWwBTAHkAcwB0AGUAbQAuAFIAdQBuAHQAaQBtAGUALgBJAG4AdABlAHIAbwBwAFMAZQByAHYAaQBjAGUAcwAuAEQAbABsAEkAbQBwAG8AcgB0ACgAIgBrAGUAcgBuAGUAbAAzADIALgBkAGwAbAAiACkAXQAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAGkAbgB0ACAAbgApADsACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAuAGQAbABsACIAKQBdACAAcAB1AGIAbABpAGMAIABzAHQAYQB0AGkAYwAgAGUAeAB0AGUAcgBuACAAYgBvAG8AbAAgAEcAZQB0AEMAbwBuAHMAbwBsAGUATQBvAGQAZQAoAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABoACwAIABvAHUAdAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKAFsAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMALgBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABiAG8AbwBsACAAUwBlAHQAQwBvAG4AcwBvAGwAZQBNAG8AZABlACgAUwB5AHMAdABlAG0ALgBJAG4AdABQAHQAcgAgAGgALAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKACcAQAAKACQAaABhAG4AZABsAGUAIAA9ACAAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAC0AMQAxACkACgBbAHUAaQBuAHQAMwAyAF0AJABtAG8AZABlACAAPQAgADAACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIABbAHIAZQBmAF0AJABtAG8AZABlACkAKQAgAHsAIABlAHgAaQB0ACAAMQAgAH0ACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBTAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIAAoACQAbQBvAGQAZQAgAC0AYgBvAHIAIAA0ACkAKQApACAAewAgAGUAeABpAHQAIAAxACAAfQA= 2>NUL
 if errorlevel 1 goto pradzia
 :ansi_colors
@@ -86,17 +90,18 @@ goto skaityti_komandines_eilutes_parametra
 call :ikelti_kalba
 echo.
 echo %vertimas[parodyti_pagalba.sintakse]%
-echo.   %app_name% [/?] [/L %vertimas[parodyti_pagalba.kodas]%] [/COLOR] [/MONO]
+echo.   %app_name% [/?] [/L %vertimas[parodyti_pagalba.kodas]%] [/COLOR] [/MONO] [/D easy^|normal^|hard]
 echo.
 echo %vertimas[parodyti_pagalba.parametrai]%
+echo.   /D       %vertimas[difficulty.help]%
 echo.   /?       %vertimas[parodyti_pagalba.parametras.pagalba]%
 echo.   /L %vertimas[parodyti_pagalba.kodas]%  %vertimas[parodyti_pagalba.parametras.kalba]%
 echo.
 goto pabaiga
 
 :pradzia
-rem Here we setting default values for all of our variables
 call :ikelti_kalba
+if not defined difficulty call :choose_difficulty
 set tuscias_langelis=.
 set zaidejas1=X
 set zaidejas2=O
@@ -115,8 +120,6 @@ set emsg=
 goto braizom
 
 :braizom
-rem This part is used for drawing the board
-rem We need to specify value for griztam variable, before using this part (is use label names)
 for %%n in (1 2 3 4 5 6 7 8 9) do call :cell_text %%n
 cls
 echo.
@@ -124,6 +127,8 @@ echo     %c_x%▀█▀ ▀█▀ █▀▀%c_result%   ▀█▀ ▄▀█ █�
 echo     %c_x% █   █  █%c_result%      █  █▀█ █%c_o%      █  █ █ █▀▀%c_reset%
 echo     %c_x% ▀  ▀▀▀ ▀▀▀%c_result%    ▀  ▀ ▀ ▀▀▀%c_o%    ▀  ▀▀▀ ▀▀▀%c_reset%
 echo     %c_board%━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%c_reset%
+echo.
+call echo     %vertimas[difficulty.label]%: %%vertimas[difficulty.%difficulty%]%%
 echo.
 echo     %c_board%┏━━━━━━━┯━━━━━━━┯━━━━━━━┓%c_reset%
 echo     %c_board%┃  %t1%  │  %t2%  │  %t3%  ┃%c_reset%    %c_x%╳  %vertimas[ui.player]%%c_reset%
@@ -140,7 +145,6 @@ echo     %c_board%┃  %b7%  │  %b8%  │  %b9%  ┃%c_reset%    %vertimas[ui.
 echo     %c_board%┗━━━━━━━┷━━━━━━━┷━━━━━━━┛%c_reset%
 echo.
 echo     %c_board%━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%c_reset%
-rem If there was an error, we show this here
 if NOT "%e_spc%"=="" (
    echo            %c_result%%emsg%%c_reset%
    echo.
@@ -150,7 +154,6 @@ if NOT "%klaida%"=="" (
    echo            %c_error%[!] %vertimas[braizom.klaida]% %klaida%%c_reset%
    echo.
 )
-rem Here it's possible enter where to place mark
 set zenklas=%zaidejas1%
 echo     %c_x%●  %vertimas[ui.turn]%%c_reset%
 set /P "ejimas=%c_x%    › %c_reset%"
@@ -221,16 +224,12 @@ if "%ejimas%"=="9" (
 	    set klaida=%vertimas[tikrink.jau_egzistuoja]%
     )
 )
-rem if entered number is lower than 1, also that was an error!
 if /I %ejimas% LSS 1 (
     set klaida=%vertimas[tikrink.bloga_koordinate]%
 )
-rem if entered number is greater than 9, also that was an error!
 if /I %ejimas% GTR 9 (
     set klaida=%vertimas[tikrink.bloga_koordinate]%
 )
-rem checking if there was a previous error
-rem if that was the computer turn, we hide all errors
 if NOT "%klaida%"=="" (
     if "%zenklas%"=="%zaidejas1%" (
 	    goto braizom
@@ -239,7 +238,6 @@ if NOT "%klaida%"=="" (
     )
 )
 
-rem here we are checking if somebody wins
 if "%e1%%e2%%e3%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
 if "%e4%%e5%%e6%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
 if "%e7%%e8%%e9%" == "%zenklas%%zenklas%%zenklas%" goto laimejimas
@@ -271,17 +269,103 @@ if NOT "%e1%"=="%tuscias_langelis%" (
    )
 )
 
-rem if you are in this place, it means you have places a mark sucessfully!
-rem now we thinking what to doo next
 if "%zenklas%"=="%zaidejas1%" goto kompiuteris
 set griztam=ivedimas
 goto braizom
 
 :kompiuteris
-rem here is a computer turn
 set zenklas=%zaidejas2%
-set /A ejimas=%RANDOM%/(32752/(9-1))+1
+set "ejimas="
+if /I "%difficulty%"=="easy" goto random_move
+if /I "%difficulty%"=="hard" (
+    call :hard_move
+    goto tikrink
+)
+call :winning_move O
+if defined ejimas goto tikrink
+call :winning_move X
+if defined ejimas goto tikrink
+:random_move
+setlocal EnableDelayedExpansion
+set /a count=0
+for /L %%n in (1,1,9) do if "!e%%n!"=="." (
+    set /a count+=1
+    set "free!count!=%%n"
+)
+set /a pick=%RANDOM% %% count + 1
+for %%n in (!pick!) do for %%m in (!free%%n!) do endlocal & set "ejimas=%%m"
 goto tikrink
+
+:winning_move
+setlocal EnableDelayedExpansion
+set "move="
+set /a threat_count=0
+for /L %%n in (1,1,9) do set "threat%%n="
+for %%l in (123 456 789 147 258 369 159 357) do (
+    set "line=%%l"
+    set /a marks=0
+    set "empty="
+    for /L %%i in (0,1,2) do for %%n in ("!line:~%%i,1!") do (
+        if "!e%%~n!"=="%1" set /a marks+=1
+        if "!e%%~n!"=="." set "empty=%%~n"
+    )
+    if !marks!==2 if defined empty (
+        set "move=!empty!"
+        if not defined threat!empty! set /a threat_count+=1
+        set "threat!empty!=1"
+    )
+)
+endlocal & set "ejimas=%move%" & set "threat_count=%threat_count%"
+exit /b
+
+:hard_move
+call :winning_move O
+if defined ejimas exit /b
+call :winning_move X
+if defined ejimas exit /b
+for %%n in (5 1 3 7 9 2 4 6 8) do (
+    call :safe_move %%n
+    if defined safe (
+        set "ejimas=%%n"
+        exit /b
+    )
+)
+exit /b
+
+:safe_move
+setlocal EnableDelayedExpansion
+set "safe="
+if not "!e%1!"=="." goto unsafe_move
+set "e%1=O"
+for /L %%n in (1,1,9) do if "!e%%n!"=="." (
+    set "e%%n=X"
+    call :winning_move O
+    if not defined ejimas (
+        call :winning_move X
+        if !threat_count! GEQ 2 goto unsafe_move
+    )
+    set "e%%n=."
+)
+endlocal & set "safe=1"
+exit /b
+:unsafe_move
+endlocal & set "safe="
+exit /b
+
+:choose_difficulty
+echo.
+echo %vertimas[difficulty.prompt]%
+echo   1. %vertimas[difficulty.easy]%
+echo   2. %vertimas[difficulty.normal]%
+echo   3. %vertimas[difficulty.hard]%
+set "difficulty_choice="
+set /p "difficulty_choice=> "
+if "%difficulty_choice%"=="1" set "difficulty=easy"
+if "%difficulty_choice%"=="2" set "difficulty=normal"
+if "%difficulty_choice%"=="3" set "difficulty=hard"
+if defined difficulty exit /b
+echo %vertimas[difficulty.invalid]%
+goto choose_difficulty
 
 :laimejimas
 if "%zenklas%"=="%zaidejas1%" (
