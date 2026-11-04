@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: cron
+      # Every four months: January, May, September, at 09:00 UTC on the 1st.
+      cronjob: "0 9 1 */4 *"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: cron
+      cronjob: "0 9 1 */4 *"
