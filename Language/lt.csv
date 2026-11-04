@@ -22,3 +22,11 @@ ui.turn,Tavo ejimas
 
 ui.choose,Rinkis langeli
 ui.confirm,Dek zenkla
+
+difficulty.label,Sunkumas
+difficulty.prompt,Pasirink sunkuma [1-3]:
+difficulty.easy,Lengvas - atsitiktiniai ejimai
+difficulty.normal,Vidutinis - laimi ir blokuoja
+difficulty.hard,Sunkus - nenugalimas
+difficulty.invalid,Rinkis 1-3 arba naudok /D easy /D normal /D hard.
+difficulty.help,Kompiuterio sunkumas: easy / normal / hard (kitaip klausiama)
