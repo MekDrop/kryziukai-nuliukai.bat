@@ -1,7 +1,7 @@
 name: Auto-merge Dependabot
 on:
   workflow_run:
-    workflows: [CI]
+    workflows: [Dependency validation]
     types: [completed]
 permissions:
   contents: read

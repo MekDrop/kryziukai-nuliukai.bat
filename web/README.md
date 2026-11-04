@@ -56,7 +56,7 @@ Dependabot checks npm dependencies and GitHub Actions every four months, on
 January 1, May 1, and September 1 at 09:00 UTC. Security updates, when enabled
 in GitHub, follow GitHub's separate security-update policy.
 
-The `CI` workflow runs `npm test`, builds the site, and validates the floppy
+The `Dependency validation` workflow runs `npm test`, builds the site, and validates the floppy
 on pull requests to `master` and pushes to `master`. After a successful PR run,
 a separate workflow enables squash auto-merge only for an open, non-draft PR
 authored by `dependabot[bot]`, targeting `master` from this repository, with a
