@@ -23,7 +23,7 @@ Terminal appearance
 
 Windows 2000 is detected automatically and uses a plain ASCII board, English text, and the existing console code page. This path needs neither PowerShell nor ANSI support. `/ASCII` selects the same display on another Windows version. Language files are resolved relative to the batch file.
 
-Other Windows versions use the UTF-8 board. Colors are automatic in Windows Terminal, ANSICON, and ConEmu. `/COLOR` opts into another ANSI-capable console whose ANSI processing is already enabled; `/MONO` disables colors. `NO_COLOR` disables automatic coloring; `/COLOR` opts back in. ASCII mode always uses plain text.
+Other Windows versions use the UTF-8 board. Colors are automatic in Windows Terminal, ANSICON, and ConEmu. In the standard Windows 10/11 console, an optional PowerShell call enables ANSI processing for the current console. If PowerShell is unavailable or the console rejects ANSI processing, the game falls back to plain text. Windows 2000 and other pre-Windows-10 systems never invoke PowerShell. `/COLOR` requests color detection; `/MONO` disables colors. `NO_COLOR` disables automatic coloring; `/COLOR` opts back in. ASCII mode always uses plain text.
 
 Windows 2000 compatibility still needs execution testing on an actual Windows 2000 installation.
 

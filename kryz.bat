@@ -27,8 +27,8 @@ set "legacy_console="
 ver | findstr /R "5\.0" >NUL
 if not errorlevel 1 set "legacy_console=1"
 if not defined legacy_console chcp 65001 >NUL
-rem Only known ANSI terminals enable colors automatically.
-set "use_color="
+rem Try colors automatically; unsupported consoles fall back to plain text.
+set "use_color=1"
 if defined WT_SESSION set "use_color=1"
 if defined ANSICON set "use_color=1"
 if /I "%ConEmuANSI%"=="ON" set "use_color=1"
@@ -67,6 +67,18 @@ goto skaityti_komandines_eilutes_parametra
 :setup_colors
 if not defined use_color goto pradzia
 if defined legacy_console goto pradzia
+rem ANSI-aware terminals do not need console mode changes.
+if defined WT_SESSION goto ansi_colors
+if defined ANSICON goto ansi_colors
+if /I "%ConEmuANSI%"=="ON" goto ansi_colors
+rem Native VT processing is available on newer Windows 10 builds and Windows 11.
+rem Never invoke PowerShell on Windows 2000 or other pre-Windows-10 systems.
+ver | findstr /R "10\.0\." >NUL
+if errorlevel 1 goto pradzia
+if not exist "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" goto pradzia
+rem Enable VT on the existing console; SetConsoleMode failure selects plain text.
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -EncodedCommand QQBkAGQALQBUAHkAcABlACAALQBOAGEAbQBlAHMAcABhAGMAZQAgAEsAcgB5AHoAIAAtAE4AYQBtAGUAIABDAG8AbgBzAG8AbABlACAALQBNAGUAbQBiAGUAcgBEAGUAZgBpAG4AaQB0AGkAbwBuACAAQAAnAAoAWwBTAHkAcwB0AGUAbQAuAFIAdQBuAHQAaQBtAGUALgBJAG4AdABlAHIAbwBwAFMAZQByAHYAaQBjAGUAcwAuAEQAbABsAEkAbQBwAG8AcgB0ACgAIgBrAGUAcgBuAGUAbAAzADIALgBkAGwAbAAiACkAXQAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAGkAbgB0ACAAbgApADsACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAuAGQAbABsACIAKQBdACAAcAB1AGIAbABpAGMAIABzAHQAYQB0AGkAYwAgAGUAeAB0AGUAcgBuACAAYgBvAG8AbAAgAEcAZQB0AEMAbwBuAHMAbwBsAGUATQBvAGQAZQAoAFMAeQBzAHQAZQBtAC4ASQBuAHQAUAB0AHIAIABoACwAIABvAHUAdAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKAFsAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMALgBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyAC4AZABsAGwAIgApAF0AIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABiAG8AbwBsACAAUwBlAHQAQwBvAG4AcwBvAGwAZQBNAG8AZABlACgAUwB5AHMAdABlAG0ALgBJAG4AdABQAHQAcgAgAGgALAAgAHUAaQBuAHQAIABtAG8AZABlACkAOwAKACcAQAAKACQAaABhAG4AZABsAGUAIAA9ACAAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABTAHQAZABIAGEAbgBkAGwAZQAoAC0AMQAxACkACgBbAHUAaQBuAHQAMwAyAF0AJABtAG8AZABlACAAPQAgADAACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBHAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIABbAHIAZQBmAF0AJABtAG8AZABlACkAKQAgAHsAIABlAHgAaQB0ACAAMQAgAH0ACgBpAGYAIAAoACEAWwBLAHIAeQB6AC4AQwBvAG4AcwBvAGwAZQBdADoAOgBTAGUAdABDAG8AbgBzAG8AbABlAE0AbwBkAGUAKAAkAGgAYQBuAGQAbABlACwAIAAoACQAbQBvAGQAZQAgAC0AYgBvAHIAIAA0ACkAKQApACAAewAgAGUAeABpAHQAIAAxACAAfQA= 2>NUL
+if errorlevel 1 goto pradzia
 
 :ansi_colors
 for /F "delims=" %%e in ('echo prompt $E^| cmd /d /q') do set "esc=%%e"
