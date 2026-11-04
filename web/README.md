@@ -69,7 +69,21 @@ also enforces CI when merging, along with any other required checks/reviews.
 Workflows become active after these files land on the default branch.
 Merges using `GITHUB_TOKEN` do not trigger push workflows, so an automatically
 merged update will be included in the next Pages deployment triggered by a
-regular push. Use a GitHub App token if immediate deployment is required.
+regular push.
+
+To auto-merge GitHub Actions updates, create a fine-grained personal access
+token restricted to this repository with **Contents: Read and write**,
+**Pull requests: Read and write**, and **Workflows: Read and write**. Save it
+as the repository **Actions secret** `DEPENDABOT_MERGE_TOKEN` (not a Dependabot
+secret). A classic PAT with `repo` and `workflow` scopes also works, but grants
+broader access. Set an expiration and rotate the secret before it expires.
+
+The workflow uses this token only for the merge command; API reads continue
+using `GITHUB_TOKEN`. Without the secret, non-workflow updates still use
+`GITHUB_TOKEN`, while workflow updates fail with an explicit setup message.
+Renamed and deleted workflow paths are checked too. A merge using the personal
+access token also triggers the Pages push workflow normally. Do not store a
+short-lived GitHub App installation token as this persistent secret.
 
 ### GitHub Pages
 
