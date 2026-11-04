@@ -1,0 +1,19 @@
+{
+  "name": "@kryz/ansicon",
+  "version": "1.84.0",
+  "private": true,
+  "type": "module",
+  "license": "Zlib",
+  "files": ["download.mjs"],
+  "scripts": {
+    "install": "node download.mjs"
+  },
+  "exports": {
+    "./ansicon.exe": "./bin/ansicon.exe",
+    "./ANSI32.dll": "./bin/ANSI32.dll",
+    "./LICENSE.txt": "./bin/LICENSE.txt"
+  },
+  "dependencies": {
+    "fflate": "0.8.3"
+  }
+}

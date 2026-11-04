@@ -1,0 +1,16 @@
+{
+  "name": "kryz-v86-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node .tools/build.mjs",
+    "test": "node --test .tools/*.test.mjs"
+  },
+  "devDependencies": {
+    "@kryz/ansicon": "file:.tools/ansicon",
+    "v86": "0.5.473"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}
