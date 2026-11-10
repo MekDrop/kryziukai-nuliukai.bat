@@ -28,7 +28,7 @@ runs:
     - name: Render website template
       uses: chuhlomin/render-template@a7c644e341797d050d1cb24332d83791b9a46dae # v1.12
       with:
-        template: web/index.html
+        template: web/index.html.tmpl
         result_path: dist/index.html
         vars: |
           latestReleaseZipUrl: ${{ steps.release.outputs.zip_url }}

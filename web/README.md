@@ -38,7 +38,7 @@ without clicking a start button. Select a difficulty and play using the keyboard
 The same composite action runs in Pages deployment and dependency validation.
 The build resolves
 the latest published GitHub release and replaces `{{ .latestReleaseZipUrl }}`
-in the page template with its tag's ZIP archive URL. The deployed page makes no
+in `web/index.html.tmpl` with its tag's ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Use `npm run build` to build without starting a server.
 English is the default. The English and Lithuanian flag buttons in the left
@@ -144,7 +144,7 @@ that launch was requested, not that Windows confirmed successful gameplay.
 ## Fixed v86 settings
 
 The Windows 2000 disk/snapshot URLs and hardware settings are hardcoded in
-`web/index.html`: 512 MiB RAM, 8 MiB VGA RAM, and a 2 GiB logical disk fetched
+`web/index.html.tmpl`: 512 MiB RAM, 8 MiB VGA RAM, and a 2 GiB logical disk fetched
 in 256 KiB chunks. There is no machine configuration file or CI variable setup.
 
 ## Windows image licensing
