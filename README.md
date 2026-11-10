@@ -27,11 +27,11 @@ Windows 2000 is detected automatically and uses a plain ASCII board, English tex
 
 Other Windows versions use the UTF-8 board. Colors are automatic in Windows Terminal, ANSICON, and ConEmu. In the standard Windows 10/11 console, an optional PowerShell call enables ANSI processing for the current console. If PowerShell is unavailable or the console rejects ANSI processing, the game falls back to plain text. Windows 2000 and other pre-Windows-10 systems never invoke PowerShell. `/COLOR` requests color detection; `/MONO` disables colors. `NO_COLOR` disables automatic coloring; `/COLOR` opts back in. ASCII mode supports colors through ANSICON, including on Windows 2000; otherwise it uses plain text. When colors are enabled, the game automatically enables an `ansicon.exe` placed beside `kryz.bat` for the current console, without installing it globally. The browser demo includes ANSICON 1.84 for this purpose.
 
-Windows 2000 compatibility still needs execution testing on an actual Windows 2000 installation.
+The Windows 2000 browser demo has been observed displaying the English ASCII board and move prompt with cyan and magenta colors through ANSICON. This confirms the initial display in the emulated guest; full gameplay and a native Windows 2000 installation still need separate testing.
 
 X is cyan, O is magenta, the board is muted gray, and errors are red.
 
-The screenshot shows actual game output rendered with xterm.js using a Windows console color palette.
+The screenshot above shows the UTF-8 layout rendered with xterm.js using a Windows console color palette. Windows 2000 uses the simpler ASCII layout described above, with a single-line title and numbered cells; colors can still be enabled through ANSICON.
 
 Winning marks turn bright green on the final board when ANSI colors are enabled. Monochrome mode surrounds each winning glyph with full-height brackets. ASCII mode uses `[X]` or `[O]`.
 
