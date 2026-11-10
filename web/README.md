@@ -19,10 +19,13 @@ Local builds run it through [act](https://nektosact.com/) using
 `.github/workflows/local-web.yml`. Install `act` and Docker with Linux
 containers enabled, and start Docker before building. The first run downloads
 the runner image and actions; `--bind` writes `dist/` back into this checkout.
+`act` reads `GITHUB_TOKEN` from your environment or prompts for it, for the release
+lookup action. CI uses its automatic read-only GitHub token.
 
 Requires Node 24 for the local npm commands. The action installs packaging tools,
 downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
-using dosfstools and mtools. Release lookup uses curl and jq. Template rendering uses the pinned
+using dosfstools and mtools. Release lookup uses the pinned
+[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the pinned
 [recih/template-render-action](https://github.com/recih/template-render-action)
 action with the Mustache engine;
 text preparation uses sed, iconv, and unix2dos. No local helper
@@ -39,7 +42,7 @@ without clicking a start button. Select a difficulty and play using the keyboard
 The same composite action runs in Pages deployment and dependency validation.
 The build resolves
 the latest published GitHub release and replaces `{{ latestReleaseZipUrl }}`
-in `web/index.html.mustache` with its tag's ZIP archive URL. The deployed page makes no
+in `web/index.html.mustache` with its release ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Use `npm run build` to build without starting a server.
 English is the default. The English and Lithuanian flag buttons in the left

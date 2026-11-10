@@ -5,7 +5,7 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "npx --yes http-server dist -p 8080",
-    "build": "act workflow_dispatch -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest"
+    "build": "act workflow_dispatch -s GITHUB_TOKEN -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest"
   },
   "devDependencies": {
     "v86": "0.5.473"

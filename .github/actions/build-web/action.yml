@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends curl jq dos2unix mtools dosfstools unzip
+        sudo apt-get install -y --no-install-recommends curl dos2unix mtools dosfstools unzip
         mkdir -p .cache/web-build/ansicon .cache/web-build/game/Language dist/vendor
     - name: Download and verify ANSICON
       shell: bash
@@ -20,11 +20,13 @@ runs:
         echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
     - name: Resolve latest release ZIP
       id: release
-      shell: bash
-      run: |
-        curl -L --fail --retry 3 --max-time 30 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/MekDrop/kryziukai-nuliukai.bat/releases/latest -o .cache/web-build/release.json
-        tag=$(jq -er '.tag_name | select(type == "string" and length > 0) | @uri' .cache/web-build/release.json)
-        echo "zip_url=https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/$tag.zip" >> "$GITHUB_OUTPUT"
+      uses: cardinalby/git-get-release-action@2ab178299eecb253f820dcf2cce11f62be1178f7 # v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        repo: MekDrop/kryziukai-nuliukai.bat
+        latest: 'true'
+        prerelease: 'false'
     - name: Render website template
       uses: recih/template-render-action@e9d7eeb6cbcb45411b658bd7a5fe96f8eb253bca # v1.0.2
       with:
@@ -32,7 +34,7 @@ runs:
         template-file: web/index.html.mustache
         output-file: dist/index.html
         vars: |
-          { "latestReleaseZipUrl": "${{ steps.release.outputs.zip_url }}" }
+          { "latestReleaseZipUrl": "${{ steps.release.outputs.zipball_url }}" }
     - name: Copy website assets
       shell: bash
       run: |
