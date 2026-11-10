@@ -27,26 +27,16 @@ runs:
         repo: MekDrop/kryziukai-nuliukai.bat
         latest: 'true'
         prerelease: 'false'
+    - name: Set up Mustache
+      uses: martoc/action-setup-mo@2791318586696963cce8e0575b73d7c49c3414c4 # v0.1.6
     - name: Render website template
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      shell: bash
       env:
-        LATEST_RELEASE_ZIP_URL: ${{ steps.release.outputs.zipball_url }}
-      with:
-        script: |
-          const fs = require('node:fs/promises');
-          const url = process.env.LATEST_RELEASE_ZIP_URL;
-          if (!url || new URL(url).protocol !== 'https:') {
-            throw new Error('Latest release ZIP URL must be a non-empty HTTPS URL');
-          }
-          // Match Mustache HTML escaping for the template's single variable.
-          const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' };
-          const escapedUrl = url.replace(/[&<>"'\/`=]/g, character => entities[character]);
-          const template = await fs.readFile('web/index.html.mustache', 'utf8');
-          const placeholder = '{{ latestReleaseZipUrl }}';
-          if (!template.includes(placeholder)) {
-            throw new Error('Release ZIP placeholder is missing from the website template');
-          }
-          await fs.writeFile('dist/index.html', template.replaceAll(placeholder, escapedUrl));
+        latestReleaseZipUrl: ${{ steps.release.outputs.zipball_url }}
+      run: |
+        # mo does not HTML-escape: accept only the GitHub archive URL's safe path characters.
+        [[ "$latestReleaseZipUrl" =~ ^https://api\.github\.com/repos/MekDrop/kryziukai-nuliukai\.bat/zipball/[a-zA-Z0-9._~/%-]+$ ]]
+        mo --fail-not-set web/index.html.mustache > dist/index.html
     - name: Copy website assets
       shell: bash
       run: |
