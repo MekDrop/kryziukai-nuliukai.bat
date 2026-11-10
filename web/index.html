@@ -17,6 +17,9 @@
   h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
   p { margin: 0; color: #aab5c7; }
   a { color: #9ccaff; text-underline-offset: 3px; }
+  .download { display: inline-block; padding: 10px 14px; border: 1px solid #9ccaff; border-radius: 6px; background: #24394e; color: #eee; text-align: center; text-decoration: none; font-weight: bold; }
+  .download:hover { background: #304d69; }
+  .download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
   .hint, footer { font-size: .8rem; }
   .languages { display: flex; gap: 8px; }
@@ -49,6 +52,7 @@
 <aside>
 <h1>Kryziukai-Nuliukai.bat</h1>
 <p data-i18n="description">The original batch game, running inside Windows 2000.</p>
+<a class="download" data-release-download data-i18n="download" href="https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/v2.1.zip">Download latest release (ZIP)</a>
 <div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
 <button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
 <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
@@ -66,6 +70,23 @@
 </main>
 </div>
 <script>
+(function () {
+    // Keep a working release ZIP available even without JavaScript or API access.
+    if (typeof fetch !== 'function') return;
+    fetch('https://api.github.com/repos/MekDrop/kryziukai-nuliukai.bat/releases/latest')
+        .then(function (response) {
+            if (!response.ok) throw new Error('Release lookup failed');
+            return response.json();
+        })
+        .then(function (release) {
+            if (typeof release.tag_name !== 'string' || !release.tag_name) return;
+            var links = document.querySelectorAll('[data-release-download]');
+            for (var i = 0; i < links.length; i++) {
+                links[i].href = 'https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/' + encodeURIComponent(release.tag_name) + '.zip';
+            }
+        })
+        .catch(function () { /* Retain the latest known release if GitHub is unavailable. */ });
+}());
 (function () {
     var lt = /(?:^|[?&])lang=lt(?:&|$)/.test(window.location.search);
     document.getElementById(lt ? 'compat-en' : 'compat-lt').style.display = 'none';
@@ -107,6 +128,7 @@ const language = new URLSearchParams(location.search).get('lang') === 'lt' ? 'lt
 const text = {
     en: {
         description: 'The original batch game, running inside Windows 2000.',
+        download: 'Download latest release (ZIP)',
         checking: 'Checking machine availability...',
         keyboard: 'Use your keyboard to play. Alt+M captures the mouse.', reload: 'Reload to start fresh.',
         source: 'Source and setup instructions', v86License: 'v86 license', biosLicense: 'BIOS licenses', ansiLicense: 'ANSICON license',
@@ -119,6 +141,7 @@ const text = {
     },
     lt: {
         description: 'Originalus .bat žaidimas Windows 2000 sistemoje.',
+        download: 'Atsisiųsti naujausią versiją (ZIP)',
         checking: 'Tikrinamas virtualus kompiuteris...',
         keyboard: 'Žaiskite klaviatūra. Alt+M užrakina pelę.', reload: 'Įkelkite puslapį iš naujo, kad pradėtumėte iš pradžių.',
         source: 'Kodas ir paleidimo instrukcijos', v86License: 'v86 licencija', biosLicense: 'BIOS licencijos', ansiLicense: 'ANSICON licencija',
