@@ -23,12 +23,16 @@ must be enabled; no separate download command or npm registry account is needed.
 
 ```sh
 npm ci
-npm run build
-npx --yes http-server dist -p 8080
+npm start
 ```
 
 Open http://localhost:8080. Windows restores and the game opens automatically,
 without clicking a start button. Select a difficulty and play using the keyboard.
+`npm start` builds the site before starting the local server. The build resolves
+the latest published GitHub release and replaces `{{LATEST_RELEASE_ZIP_URL}}`
+in the page template with its tag's ZIP archive URL. The deployed page makes no
+release API requests. A failed lookup stops the build instead of publishing a
+stale download link. Use `npm run build` to build without starting a server.
 English is the default. The English and Lithuanian flag buttons in the left
 sidebar restart the VM in the selected language; the selection is stored in the
 page URL, so a plain URL always starts in English.

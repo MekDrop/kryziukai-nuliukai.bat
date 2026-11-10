@@ -1,7 +1,9 @@
 import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
 import { gameFloppy } from './floppy.mjs';
+import { renderReleaseLink } from './release.mjs';
+const page = await renderReleaseLink(await readFile('web/index.html', 'utf8'));
 await mkdir('dist/vendor', { recursive: true });
-await copyFile('web/index.html', 'dist/index.html');
+await writeFile('dist/index.html', page);
 await copyFile('web/favicon.ico', 'dist/favicon.ico');
 for (const file of ['libv86.mjs', 'v86.wasm']) await copyFile(`node_modules/v86/build/${file}`, `dist/vendor/${file}`);
 await copyFile('node_modules/v86/LICENSE', 'dist/vendor/LICENSE');

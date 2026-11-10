@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prestart": "npm run build",
+    "start": "npx --yes http-server dist -p 8080",
     "build": "node .tools/build.mjs",
     "test": "node --test .tools/*.test.mjs"
   },
