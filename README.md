@@ -3,40 +3,69 @@
 Kryziukai-Nuliukai.bat
 ======================
 
-Browser demo CI and Windows guest setup status: [web/README.md](web/README.md).
+A Tic-Tac-Toe game for Windows, available in English and Lithuanian. You play as X against the computer. Get three marks in a row, column, or diagonal to win.
 
-[Crosses and zeros (aka Tic-Tac-Toe, Noughts and crosses, Xs and Os)](https://en.wikipedia.org/wiki/Tic-tac-toe) game written in [Windows Batch](http://en.wikipedia.org/wiki/Batch_file) language and can be played in different languages.
+Play
+====
+
+The easiest way is to **[play online](https://mekdrop.github.io/kryziukai-nuliukai.bat/)**. Wait for Windows to load inside your browser; the game opens automatically. Click inside the game, choose a difficulty, and use your keyboard to play. The flag buttons switch between English and Lithuanian. Refreshing the page starts a fresh session.
+
+To play on your own Windows computer:
+
+1. [Download the latest release](https://github.com/MekDrop/kryziukai-nuliukai.bat/releases/latest).
+2. Extract the ZIP file using **Extract All**. Keep `kryz.bat` and the `Language` folder together.
+3. Open the extracted folder and double-click `kryz.bat`.
+
+The downloadable game requires Windows 2000 or newer and needs no installation. The browser version can be played on other operating systems too.
+
+How to play
+===========
+
+Choose a difficulty by typing `1`, `2`, or `3`, then pressing Enter. During the game, type the number of an empty square (1–9) and press Enter to place your X.
+
+Type `exit` at a move prompt to quit. After a game, press Enter to play again, or type `no` (English) or `ne` (Lithuanian) to stop. You can also use `yes`/`y`, `no`/`n`, `taip`/`t`, or `ne`/`n` in the selected language.
 
 ![Kryziukai-Nuliukai.bat English version with ANSI colors](screenshot.png)
 
 Difficulty
 ==========
 
-Choose a difficulty when starting the game, or pass `/D easy`, `/D normal`, or `/D hard` (for example, `kryz.bat /L lt /D hard /MONO`). Press Enter to accept the displayed default: Normal on the first run, then your last selected difficulty on later runs. Choices made with `/D` are remembered too. The selection stays active when playing again. Preferences are stored in `%APPDATA%\kryziukai-nuliukai.bat\difficulty.txt`; if the profile is not writable, the game still works without saving the choice.
+Press Enter at the difficulty prompt to accept the default: Normal the first time, then your last selected difficulty. The same difficulty stays active when playing again.
 
 - **Easy** picks a random free square.
 - **Normal** takes an immediate win, blocks an immediate loss, then picks a random free square.
 - **Hard** plays optimally: you can draw, but cannot win.
 
-Hard uses readable batch rules: win, block, then choose a square that prevents the player from building a fork (two separate winning threats). It prefers the center, corners, then sides when several moves are safe. All AI logic lives in `kryz.bat`; the existing `Language` files supply translations.
+Project status
+==============
 
-Terminal appearance
-===================
+This project is mostly inactive, with occasional updates when I have time and interest. Small fixes may be considered, but pull requests may go unanswered. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-Windows 2000 is detected automatically and uses a plain ASCII board, English text, and the existing console code page. An optional ASCII translation in `Language/<code>.txt` enables another language in this mode; the browser demo generates one for Lithuanian. This path needs neither PowerShell nor ANSI support. `/ASCII` selects the same display on another Windows version. Legacy ASCII mode also requests a 125-column console with 300 lines of scrollback when supported. Language files are resolved relative to the batch file.
+Advanced options
+================
 
-Other Windows versions use the UTF-8 board. Colors are automatic in Windows Terminal, ANSICON, and ConEmu. In the standard Windows 10/11 console, an optional PowerShell call enables ANSI processing for the current console. If PowerShell is unavailable or the console rejects ANSI processing, the game falls back to plain text. Windows 2000 and other pre-Windows-10 systems never invoke PowerShell. `/COLOR` requests color detection; `/MONO` disables colors. `NO_COLOR` disables automatic coloring; `/COLOR` opts back in. ASCII mode supports colors through ANSICON, including on Windows 2000; otherwise it uses plain text. When colors are enabled, the game automatically enables an `ansicon.exe` placed beside `kryz.bat` for the current console, without installing it globally. The browser demo includes ANSICON 1.84 for this purpose.
+The game is written in Windows Batch. No programming knowledge is needed to play. If you use Command Prompt, you can choose a language, difficulty, or display mode when launching it:
 
-The Windows 2000 browser demo has been observed displaying the English ASCII board and move prompt with cyan and magenta colors through ANSICON. This confirms the initial display in the emulated guest; full gameplay and a native Windows 2000 installation still need separate testing.
+```bat
+kryz.bat /L lt /D hard /MONO
+```
 
-X is cyan, O is magenta, the board is muted gray, and errors are red.
+- `/L en` or `/L lt`: English or Lithuanian.
+- `/D easy`, `/D normal`, or `/D hard`: skip the difficulty prompt.
+- `/MONO`: disable colors.
+- `/COLOR`: request colors if the terminal supports them.
+- `/ASCII`: use simpler board characters.
+- `/?`: show help.
 
-The screenshot above shows the UTF-8 layout rendered with xterm.js using a Windows console color palette. Windows 2000 uses the simpler ASCII layout described above, with a single-line title and numbered cells; colors can still be enabled through ANSICON.
+Difficulty choices, including those made with `/D`, are saved in `%APPDATA%\kryziukai-nuliukai.bat\difficulty.txt`. If saving fails, the game still works.
 
-Winning marks turn bright green on the final board when ANSI colors are enabled. Monochrome mode surrounds each winning glyph with full-height brackets. ASCII mode uses `[X]` or `[O]`.
+For browser demo development and deployment instructions, see [web/README.md](web/README.md).
 
+Display and compatibility
+=========================
 
-Game controls
-=============
+X is cyan and O is magenta when colors are supported. Winning marks turn green; without colors, brackets highlight them instead.
 
-Enter a square number (1-9), or type `exit` at any move prompt to quit the game. At the play-again prompt, enter the full answer or its first letter: `yes`/`y` or `no`/`n` in English, `taip`/`t` or `ne`/`n` in Lithuanian. Press Enter without typing an answer to play again. Commands and replay answers are case-insensitive; press Enter to confirm.
+If the board looks wrong, try the simpler display by running `kryz.bat /ASCII` from Command Prompt. Windows 2000 uses this layout automatically. Colors are optional; the game can run without PowerShell or color support.
+
+The screenshot shows the modern board layout. The Windows 2000 browser demo uses a simpler board with numbered squares. Its initial display has been checked in the emulator; full gameplay and a native Windows 2000 installation still need separate testing.

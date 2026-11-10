@@ -3,7 +3,9 @@
 The page starts v86's prepared **Windows 2000** demo and automatically launches
 this repository's `kryz.bat`. It mounts a freshly built game floppy after restoring
 the desktop snapshot. No installation, disk picker, or Windows image setting is
-needed for the default demo. Windows XP is not used.
+needed for the default demo.
+
+To play without building anything, [open the hosted demo](https://mekdrop.github.io/kryziukai-nuliukai.bat/). For download instructions and game controls, see the [main README](../README.md).
 
 Browsers without the required JavaScript, WebAssembly, canvas, or layout support
 show a plain HTML compatibility message and a link to the downloadable game.
@@ -13,6 +15,43 @@ fallback is available in English and Lithuanian; with JavaScript disabled, both
 translations remain visible.
 
 ## Run locally
+
+Requires Node 24, [act](https://nektosact.com/), and Docker with Linux containers enabled. Start Docker before building and run these commands from the repository root. The release lookup requires a GitHub token; act prompts for GITHUB_TOKEN if it is not provided.
+
+```sh
+npm ci
+npm start
+```
+
+Open http://localhost:8080. Windows restores and the game opens automatically,
+without clicking a start button. Select a difficulty and play using the keyboard.
+`npm start` runs the local workflow through `act` before starting the local server.
+Use `npm run build` to build without starting a server.
+
+## Playing the demo
+
+English is the default. The English and Lithuanian flag buttons in the left
+sidebar restart the VM in the selected language; the selection is stored in the
+page URL, so a plain URL always starts in English.
+The sidebar, loading messages, mouse hints, and accessibility labels switch with
+the game language. The game console opens maximized with a dedicated
+20-pixel Lucida Console font profile. The profile is imported inside the guest
+before creating the console, so the font is independent of browser CSS.
+Click the machine or press Alt+M while it is focused to capture the mouse;
+press Esc to release it. The focusable VM exposes an application role, a
+translated accessible name, and input instructions. Browser pointer
+capture requires that click, while machine startup remains automatic.
+Refresh the page to reopen the game if you close its console. Refresh resets the VM;
+changes are not saved to the upstream disk.
+
+The static site is about 4 MB before HTTP compression. The upstream compressed
+snapshot adds about 28.3 MiB on first launch; disk blocks are fetched in 256 KiB
+chunks as Windows needs them. The logical disk is 2 GiB, not a 2 GiB initial
+download. The snapshot requires 512 MiB guest RAM. This uses the upstream demo
+as supplied, including its installed applications; it is not a stripped Windows
+build. No UI framework, audio, or guest network relay is configured.
+
+## Build details
 
 The shared build is a composite action in `.github/actions/build-web/`.
 Local builds run it through [act](https://nektosact.com/) using
@@ -34,40 +73,12 @@ archive URL format before rendering because `mo` does not HTML-escape values;
 text preparation uses sed, iconv, and unix2dos. No local helper
 package or npm install hook is used.
 
-```sh
-npm ci
-npm start
-```
-
-Open http://localhost:8080. Windows restores and the game opens automatically,
-without clicking a start button. Select a difficulty and play using the keyboard.
-`npm start` runs the local workflow through `act` before starting the local server.
 The same composite action runs in Pages deployment and dependency validation.
 The build resolves
 the latest published GitHub release and replaces `{{ latestReleaseZipUrl }}`
 in `web/index.html.mustache` with its release ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Use `npm run build` to build without starting a server.
-English is the default. The English and Lithuanian flag buttons in the left
-sidebar restart the VM in the selected language; the selection is stored in the
-page URL, so a plain URL always starts in English.
-The sidebar, loading messages, mouse hints, and accessibility labels switch with
-the game language. The game console opens maximized with a dedicated
-20-pixel Lucida Console font profile. The profile is imported inside the guest
-before creating the console, so the font is independent of browser CSS.
-Click the machine or press Alt+M while it is focused to capture the mouse;
-press Esc to release it. The focusable VM exposes an application role, a
-translated accessible name, and input instructions. Browser pointer
-capture requires that click, while machine startup remains automatic.
-Refresh the page to reopen the game if you close its console. Refresh resets the VM;
-changes are not saved to the upstream disk.
-
-The static site is about 4 MB before HTTP compression. The upstream compressed
-snapshot adds about 28.3 MiB on first launch; disk blocks are fetched in 256 KiB
-chunks as Windows needs them. The logical disk is 2 GiB, not a 2 GiB initial
-download. The snapshot requires 512 MiB guest RAM. This uses the upstream demo
-as supplied, including its installed applications; it is not a stripped Windows
-build. No UI framework, audio, or guest network relay is configured.
 
 ## Publishing
 
@@ -125,7 +136,7 @@ omit the referring page URL. The image host must allow cross-origin downloads.
 
 ## Game integration
 
-The FAT12 floppy contains `kryz.bat`, `console.reg`, both language CSVs, the game license,
+The FAT12 floppy contains `kryz.bat`, `console.reg`, both language CSVs, the generated ASCII Lithuanian translation, the game license,
 and the unmodified x86 ANSICON 1.84 executable/DLL with its license.
 The helper adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
 ANSI colors in the game console using `-p`, without a permanent registry
