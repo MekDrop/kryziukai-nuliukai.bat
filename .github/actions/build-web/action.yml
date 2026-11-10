@@ -26,12 +26,13 @@ runs:
         tag=$(jq -er '.tag_name | select(type == "string" and length > 0) | @uri' .cache/web-build/release.json)
         echo "zip_url=https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/$tag.zip" >> "$GITHUB_OUTPUT"
     - name: Render website template
-      uses: chuhlomin/render-template@a7c644e341797d050d1cb24332d83791b9a46dae # v1.12
+      uses: recih/template-render-action@e9d7eeb6cbcb45411b658bd7a5fe96f8eb253bca # v1.0.2
       with:
-        template: web/index.html.tmpl
-        result_path: dist/index.html
+        engine: mustache
+        template-file: web/index.html.mustache
+        output-file: dist/index.html
         vars: |
-          latestReleaseZipUrl: ${{ steps.release.outputs.zip_url }}
+          { "latestReleaseZipUrl": "${{ steps.release.outputs.zip_url }}" }
     - name: Copy website assets
       shell: bash
       run: |
@@ -90,4 +91,4 @@ runs:
           mtype -i dist/game.img "::/$relative" | cmp "$file" -
         done < <(find .cache/web-build/game -type f -print0)
         test "$(stat -c %s dist/game.img)" = 1474560
-        if grep -q '{{ .latestReleaseZipUrl }}' dist/index.html; then exit 1; fi
+        if grep -q '{{ latestReleaseZipUrl }}' dist/index.html; then exit 1; fi

@@ -23,7 +23,8 @@ the runner image and actions; `--bind` writes `dist/` back into this checkout.
 Requires Node 24 for the local npm commands. The action installs packaging tools,
 downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses curl and jq. Template rendering uses the pinned
-[chuhlomin/render-template](https://github.com/chuhlomin/render-template) action;
+[recih/template-render-action](https://github.com/recih/template-render-action)
+action with the Mustache engine;
 text preparation uses sed, iconv, and unix2dos. No local helper
 package or npm install hook is used.
 
@@ -37,8 +38,8 @@ without clicking a start button. Select a difficulty and play using the keyboard
 `npm start` runs the local workflow through `act` before starting the local server.
 The same composite action runs in Pages deployment and dependency validation.
 The build resolves
-the latest published GitHub release and replaces `{{ .latestReleaseZipUrl }}`
-in `web/index.html.tmpl` with its tag's ZIP archive URL. The deployed page makes no
+the latest published GitHub release and replaces `{{ latestReleaseZipUrl }}`
+in `web/index.html.mustache` with its tag's ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Use `npm run build` to build without starting a server.
 English is the default. The English and Lithuanian flag buttons in the left
@@ -144,7 +145,7 @@ that launch was requested, not that Windows confirmed successful gameplay.
 ## Fixed v86 settings
 
 The Windows 2000 disk/snapshot URLs and hardware settings are hardcoded in
-`web/index.html.tmpl`: 512 MiB RAM, 8 MiB VGA RAM, and a 2 GiB logical disk fetched
+`web/index.html.mustache`: 512 MiB RAM, 8 MiB VGA RAM, and a 2 GiB logical disk fetched
 in 256 KiB chunks. There is no machine configuration file or CI variable setup.
 
 ## Windows image licensing
