@@ -17,7 +17,7 @@
   h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
   p { margin: 0; color: #aab5c7; }
   a { color: #9ccaff; text-underline-offset: 3px; }
-  .download { display: inline-block; padding: 10px 14px; border: 1px solid #9ccaff; border-radius: 6px; background: #24394e; color: #eee; text-align: center; text-decoration: none; font-weight: bold; }
+  .download { display: block; padding: 9px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; text-align: center; text-decoration: none; font-size: .8rem; font-weight: bold; }
   .download:hover { background: #304d69; }
   .download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
@@ -36,11 +36,14 @@
   canvas { display: none; width: 100% !important; height: 100% !important; }
   @media (max-width: 700px) {
     #app { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-    aside { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    aside { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "title description" "languages languages" "download download" "status hint" "footer footer"; gap: 8px 16px; }
+    aside > h1 { grid-area: title; } aside > p:first-of-type { grid-area: description; }
+    .languages { grid-area: languages; }
     h1 { font-size: 1.2rem; } aside > p:first-of-type { font-size: .8rem; }
-    #status { border: 0; padding: 0; font-size: .75rem; }
-    .hint { font-size: .7rem; }
-    footer { display: flex; flex-wrap: wrap; grid-column: 1 / -1; gap: 4px 12px; margin: 0; font-size: .7rem; }
+    #status { grid-area: status; border: 0; padding: 0; font-size: .75rem; }
+    .hint { grid-area: hint; font-size: .7rem; }
+    .download { grid-area: download; padding: 7px 10px; font-size: .7rem; }
+    footer { display: flex; flex-wrap: wrap; grid-area: footer; gap: 4px 12px; margin: 0; font-size: .7rem; }
   }
 </style>
 <div id="compatibility" role="alert">
@@ -52,7 +55,6 @@
 <aside>
 <h1>Kryziukai-Nuliukai.bat</h1>
 <p data-i18n="description">The original batch game, running inside Windows 2000.</p>
-<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
 <div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
 <button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
 <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
@@ -61,6 +63,7 @@
 <svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fdb913" d="M0 0h30v7H0z"/><path fill="#006a44" d="M0 7h30v6H0z"/><path fill="#c1272d" d="M0 13h30v7H0z"/></svg>
 </button>
 </div>
+<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
 <p id="status" data-i18n="checking" role="status" aria-live="polite">Checking machine availability...</p>
 <p class="hint" id="machine-input-hint"><span data-i18n="keyboard">Use your keyboard to play. Alt+M captures the mouse.</span><br><span id="mouse-hint" data-i18n="mouseAvailable">Click the machine to capture the mouse. Esc releases it.</span><br><span data-i18n="reload">Reload to start fresh.</span></p>
 <footer><a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></footer>
