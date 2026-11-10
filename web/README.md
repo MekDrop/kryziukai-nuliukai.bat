@@ -52,7 +52,9 @@ English is the default. The English and Lithuanian flag buttons in the left
 sidebar restart the VM in the selected language; the selection is stored in the
 page URL, so a plain URL always starts in English.
 The sidebar, loading messages, mouse hints, and accessibility labels switch with
-the game language. The game console opens maximized.
+the game language. The game console opens maximized with a dedicated
+20-pixel Lucida Console font profile. The profile is imported inside the guest
+before creating the console, so the font is independent of browser CSS.
 Click the machine or press Alt+M while it is focused to capture the mouse;
 press Esc to release it. The focusable VM exposes an application role, a
 translated accessible name, and input instructions. Browser pointer
@@ -123,7 +125,7 @@ omit the referring page URL. The image host must allow cross-origin downloads.
 
 ## Game integration
 
-The FAT12 floppy contains `kryz.bat`, both language CSVs, the game license,
+The FAT12 floppy contains `kryz.bat`, `console.reg`, both language CSVs, the game license,
 and the unmodified x86 ANSICON 1.84 executable/DLL with its license.
 The helper adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
 ANSI colors in the game console using `-p`, without a permanent registry
@@ -140,10 +142,21 @@ Lithuanian translation for Windows 2000. Accents are removed in this fallback;
 the original UTF-8 source translation stays unchanged. The batch game uses an
 optional language `.txt` file in legacy mode, otherwise falling back to English.
 The page restores the snapshot, inserts this floppy, starts the CPU, and uses
-Windows Run with `start /max` to launch `kryz.bat` directly in a maximized
+Windows Run to import `A:\console.reg` silently with `regedit /s`, waiting for
+the import to finish before using `start "Kryz Browser" /max` to launch
+`kryz.bat` directly in a maximized
 command window with `/ASCII /L en` or `/L lt`. The game detects and
 enables the adjacent `ansicon.exe` and sizes the legacy console itself; no
-launcher batch file is generated.
+launcher batch file is generated. The unique startup title selects
+`HKCU\Console\Kryz Browser`, which requests Lucida Console at 20 pixels,
+a 125-column buffer, and 300 lines of scrollback. The game's subsequent title
+change preserves that font. The registry change is confined to the disposable
+guest and is reapplied on each page load.
+The same registry import disables Automatic Updates in the guest, suppresses
+its update notifications for the desktop user, and requests no automatic reboot
+while a user is logged on. These policies prevent update interruptions in the
+disposable demo; they do not clear a pending reboot or dismiss a dialog already
+present in the upstream snapshot. They do not affect the host computer.
 
 The initial desktop launch uses a short delay. On a particularly slow device,
 wait for the desktop, then use Windows Run to launch `A:\kryz.bat /ASCII /L en` if necessary. The status indicates
