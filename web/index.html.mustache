@@ -17,7 +17,7 @@
   h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
   p { margin: 0; color: #aab5c7; }
   a { color: #9ccaff; text-underline-offset: 3px; }
-  .download { display: block; padding: 9px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; text-align: center; text-decoration: none; font-weight: bold; }
+  .download { display: block; padding: 9px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; text-align: center; text-decoration: none; font-size: .8rem; font-weight: bold; }
   .download:hover { background: #304d69; }
   .download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
@@ -28,8 +28,7 @@
   .languages button:hover { background: #24394e; }
   .languages button:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   .languages svg { display: block; width: 32px; height: 20px; }
-  footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #303947; display: grid; gap: 12px; }
-  .licenses { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .7rem; }
+  footer { margin-top: auto; display: grid; gap: 6px; }
   main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0c1016; border: 1px solid #303947; border-radius: 8px; overflow: hidden; }
   #screen_container { flex: none; background: #000; line-height: 0; }
   #screen_container:focus-visible { outline: 2px solid #9ccaff; outline-offset: -2px; }
@@ -37,13 +36,14 @@
   canvas { display: none; width: 100% !important; height: 100% !important; }
   @media (max-width: 700px) {
     #app { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
-    aside { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    aside { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "title description" "languages languages" "download download" "status hint" "footer footer"; gap: 8px 16px; }
+    aside > h1 { grid-area: title; } aside > p:first-of-type { grid-area: description; }
+    .languages { grid-area: languages; }
     h1 { font-size: 1.2rem; } aside > p:first-of-type { font-size: .8rem; }
-    #status { border: 0; padding: 0; font-size: .75rem; }
-    .hint { font-size: .7rem; }
-    footer { display: flex; flex-wrap: wrap; align-items: center; grid-column: 1 / -1; gap: 8px 12px; margin: 0; padding-top: 10px; font-size: .7rem; }
-    .download { padding: 7px 10px; }
-    .licenses { flex-basis: 100%; }
+    #status { grid-area: status; border: 0; padding: 0; font-size: .75rem; }
+    .hint { grid-area: hint; font-size: .7rem; }
+    .download { grid-area: download; padding: 7px 10px; font-size: .7rem; }
+    footer { display: flex; flex-wrap: wrap; grid-area: footer; gap: 4px 12px; margin: 0; font-size: .7rem; }
   }
 </style>
 <div id="compatibility" role="alert">
@@ -63,13 +63,10 @@
 <svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fdb913" d="M0 0h30v7H0z"/><path fill="#006a44" d="M0 7h30v6H0z"/><path fill="#c1272d" d="M0 13h30v7H0z"/></svg>
 </button>
 </div>
+<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
 <p id="status" data-i18n="checking" role="status" aria-live="polite">Checking machine availability...</p>
 <p class="hint" id="machine-input-hint"><span data-i18n="keyboard">Use your keyboard to play. Alt+M captures the mouse.</span><br><span id="mouse-hint" data-i18n="mouseAvailable">Click the machine to capture the mouse. Esc releases it.</span><br><span data-i18n="reload">Reload to start fresh.</span></p>
-<footer>
-<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
-<a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a>
-<div class="licenses"><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></div>
-</footer>
+<footer><a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></footer>
 </aside>
 <main aria-label="Windows 2000 game machine">
 <div id="screen_container" role="application" aria-label="Windows 2000 game machine" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
