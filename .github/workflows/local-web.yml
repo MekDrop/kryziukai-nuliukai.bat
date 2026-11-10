@@ -1,0 +1,19 @@
+name: Build local browser demo
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        if: ${{ !env.ACT }}
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+      - run: npm ci --include=dev
+      - uses: ./.github/actions/build-web

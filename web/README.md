@@ -14,7 +14,11 @@ translations remain visible.
 
 ## Run locally
 
-Build and download scripts live in `.tools/` at the repository root.
+The shared build is a composite action in `.github/actions/build-web/`.
+Local builds run it through [act](https://nektosact.com/) using
+`.github/workflows/local-web.yml`. Install `act` and Docker with Linux
+containers enabled, and start Docker before building. The first run downloads
+the runner image and actions; `--bind` writes `dist/` back into this checkout.
 
 Requires Node 24. `npm ci` installs the private local `@kryz/ansicon` package,
 whose install hook downloads and verifies the pinned helper release into
@@ -28,7 +32,9 @@ npm start
 
 Open http://localhost:8080. Windows restores and the game opens automatically,
 without clicking a start button. Select a difficulty and play using the keyboard.
-`npm start` builds the site before starting the local server. The build resolves
+`npm start` runs the local workflow through `act` before starting the local server.
+The same composite action runs in Pages deployment and dependency validation.
+The build resolves
 the latest published GitHub release and replaces `{{LATEST_RELEASE_ZIP_URL}}`
 in the page template with its tag's ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a

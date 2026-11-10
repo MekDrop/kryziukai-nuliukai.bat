@@ -22,7 +22,7 @@ jobs:
       - name: Install all npm dependencies
         run: npm ci --include=dev
       - name: Build website
-        run: npm run build
+        uses: ./.github/actions/build-web
       - name: Verify game floppy with independent FAT tools
         run: |
           sudo apt-get update -qq
