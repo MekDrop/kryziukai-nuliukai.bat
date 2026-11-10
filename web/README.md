@@ -138,12 +138,12 @@ the original UTF-8 source translation stays unchanged. The batch game uses an
 optional language `.txt` file in legacy mode, otherwise falling back to English.
 The page restores the snapshot, inserts this floppy, starts the CPU, and uses
 Windows Run with `start /max` to launch `kryz.bat` directly in a maximized
-command window with `/ASCII /COLOR /L en` or `/L lt`. The game detects and
+command window with `/ASCII /L en` or `/L lt`. The game detects and
 enables the adjacent `ansicon.exe` and sizes the legacy console itself; no
 launcher batch file is generated.
 
 The initial desktop launch uses a short delay. On a particularly slow device,
-wait for the desktop, then use Windows Run to launch `A:\kryz.bat /ASCII /COLOR /L en` if necessary. The status indicates
+wait for the desktop, then use Windows Run to launch `A:\kryz.bat /ASCII /L en` if necessary. The status indicates
 that launch was requested, not that Windows confirmed successful gameplay.
 
 ## Fixed v86 settings

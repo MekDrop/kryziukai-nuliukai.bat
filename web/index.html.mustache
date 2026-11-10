@@ -197,7 +197,7 @@ async function runGame() {
     // Windows+R opens Run on the restored Windows 2000 desktop.
     emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
     await sleep(800);
-    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\kryz.bat /ASCII /COLOR /L ${language}\n`, 20);
+    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
     document.querySelector('#screen_container').focus({ preventScroll: true });
     status.textContent = text.launched;
 }
