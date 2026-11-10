@@ -26,8 +26,9 @@ Requires Node 24 for the local npm commands. The action installs packaging tools
 downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
 [cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the pinned
-[recih/template-render-action](https://github.com/recih/template-render-action)
-action with the Mustache engine;
+[actions/github-script](https://github.com/actions/github-script) v8 action on Node 24
+to replace the release URL placeholder with its HTML-escaped value. It does not
+emit rendered HTML as an action output, avoiding the deprecated `set-output` command;
 text preparation uses sed, iconv, and unix2dos. No local helper
 package or npm install hook is used.
 

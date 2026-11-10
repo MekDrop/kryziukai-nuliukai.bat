@@ -17,7 +17,7 @@
   h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
   p { margin: 0; color: #aab5c7; }
   a { color: #9ccaff; text-underline-offset: 3px; }
-  .download { display: inline-block; padding: 10px 14px; border: 1px solid #9ccaff; border-radius: 6px; background: #24394e; color: #eee; text-align: center; text-decoration: none; font-weight: bold; }
+  .download { display: block; padding: 9px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; text-align: center; text-decoration: none; font-weight: bold; }
   .download:hover { background: #304d69; }
   .download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
@@ -28,7 +28,8 @@
   .languages button:hover { background: #24394e; }
   .languages button:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   .languages svg { display: block; width: 32px; height: 20px; }
-  footer { margin-top: auto; display: grid; gap: 6px; }
+  footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #303947; display: grid; gap: 12px; }
+  .licenses { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .7rem; }
   main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0c1016; border: 1px solid #303947; border-radius: 8px; overflow: hidden; }
   #screen_container { flex: none; background: #000; line-height: 0; }
   #screen_container:focus-visible { outline: 2px solid #9ccaff; outline-offset: -2px; }
@@ -40,7 +41,9 @@
     h1 { font-size: 1.2rem; } aside > p:first-of-type { font-size: .8rem; }
     #status { border: 0; padding: 0; font-size: .75rem; }
     .hint { font-size: .7rem; }
-    footer { display: flex; flex-wrap: wrap; grid-column: 1 / -1; gap: 4px 12px; margin: 0; font-size: .7rem; }
+    footer { display: flex; flex-wrap: wrap; align-items: center; grid-column: 1 / -1; gap: 8px 12px; margin: 0; padding-top: 10px; font-size: .7rem; }
+    .download { padding: 7px 10px; }
+    .licenses { flex-basis: 100%; }
   }
 </style>
 <div id="compatibility" role="alert">
@@ -52,7 +55,6 @@
 <aside>
 <h1>Kryziukai-Nuliukai.bat</h1>
 <p data-i18n="description">The original batch game, running inside Windows 2000.</p>
-<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
 <div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
 <button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
 <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
@@ -63,7 +65,11 @@
 </div>
 <p id="status" data-i18n="checking" role="status" aria-live="polite">Checking machine availability...</p>
 <p class="hint" id="machine-input-hint"><span data-i18n="keyboard">Use your keyboard to play. Alt+M captures the mouse.</span><br><span id="mouse-hint" data-i18n="mouseAvailable">Click the machine to capture the mouse. Esc releases it.</span><br><span data-i18n="reload">Reload to start fresh.</span></p>
-<footer><a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></footer>
+<footer>
+<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
+<a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a>
+<div class="licenses"><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></div>
+</footer>
 </aside>
 <main aria-label="Windows 2000 game machine">
 <div id="screen_container" role="application" aria-label="Windows 2000 game machine" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>

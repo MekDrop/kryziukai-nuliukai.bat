@@ -28,13 +28,25 @@ runs:
         latest: 'true'
         prerelease: 'false'
     - name: Render website template
-      uses: recih/template-render-action@e9d7eeb6cbcb45411b658bd7a5fe96f8eb253bca # v1.0.2
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      env:
+        LATEST_RELEASE_ZIP_URL: ${{ steps.release.outputs.zipball_url }}
       with:
-        engine: mustache
-        template-file: web/index.html.mustache
-        output-file: dist/index.html
-        vars: |
-          { "latestReleaseZipUrl": "${{ steps.release.outputs.zipball_url }}" }
+        script: |
+          const fs = require('node:fs/promises');
+          const url = process.env.LATEST_RELEASE_ZIP_URL;
+          if (!url || new URL(url).protocol !== 'https:') {
+            throw new Error('Latest release ZIP URL must be a non-empty HTTPS URL');
+          }
+          // Match Mustache HTML escaping for the template's single variable.
+          const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' };
+          const escapedUrl = url.replace(/[&<>"'\/`=]/g, character => entities[character]);
+          const template = await fs.readFile('web/index.html.mustache', 'utf8');
+          const placeholder = '{{ latestReleaseZipUrl }}';
+          if (!template.includes(placeholder)) {
+            throw new Error('Release ZIP placeholder is missing from the website template');
+          }
+          await fs.writeFile('dist/index.html', template.replaceAll(placeholder, escapedUrl));
     - name: Copy website assets
       shell: bash
       run: |
