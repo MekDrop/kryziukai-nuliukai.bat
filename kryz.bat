@@ -72,6 +72,8 @@ goto skaityti_komandines_eilutes_parametra
 
 :setup_colors
 if not defined use_color goto pradzia
+rem Enable a bundled ANSICON for this console without installing it globally.
+if not defined ANSICON if exist "%script_dir%ansicon.exe" "%script_dir%ansicon.exe" -p
 rem ANSICON supplies ANSI support even in the legacy ASCII console.
 if defined ANSICON goto ansi_colors
 if defined legacy_console goto pradzia

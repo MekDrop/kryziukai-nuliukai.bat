@@ -118,12 +118,12 @@ omit the referring page URL. The image host must allow cross-origin downloads.
 ## Game integration
 
 The FAT12 floppy contains `kryz.bat`, both language CSVs, the game license,
-`run.bat`, and the unmodified x86 ANSICON 1.84 executable/DLL with its license.
+and the unmodified x86 ANSICON 1.84 executable/DLL with its license.
 The helper adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
-ANSI colors in the launcher process using `-p`, without a permanent registry
+ANSI colors in the game console using `-p`, without a permanent registry
 installation. X is cyan, O is magenta, and winning marks are green. ASCII board
 characters remain compatible with the legacy console. If ANSICON is unavailable,
-the wrapper falls back to monochrome. The pinned archive and SHA-256 checksums are in [the build action](../.github/actions/build-web/action.yml).
+the game falls back to monochrome. The pinned archive and SHA-256 checksums are in [the build action](../.github/actions/build-web/action.yml).
 The [upstream source](https://github.com/adoxa/ansicon/tree/v1.84) supplies the
 zlib license, which is extracted by the build action and included in the built
 site and game floppy. Version 1.84 is used because the 1.89 binaries target
@@ -133,13 +133,13 @@ The build also generates `Language/lt.txt`, an ASCII version of the
 Lithuanian translation for Windows 2000. Accents are removed in this fallback;
 the original UTF-8 source translation stays unchanged. The batch game uses an
 optional language `.txt` file in legacy mode, otherwise falling back to English.
-The wrapper changes to drive A: and invokes the batch file in ASCII/monochrome
-mode with `/L en` or `/L lt`. The page restores the snapshot, inserts this floppy,
-starts the CPU, and uses Windows Run with `start /max` to open the wrapper in a
-maximized command window, passing `en` or `lt`.
+The page restores the snapshot, inserts this floppy, starts the CPU, and uses
+Windows Run with `start /max` to launch `kryz.bat` directly in a maximized
+command window with `/ASCII /COLOR /L en` or `/L lt`. The game detects and
+enables the adjacent `ansicon.exe` itself; no launcher batch file is generated.
 
 The initial desktop launch uses a short delay. On a particularly slow device,
-wait for the desktop, then use Windows Run to launch `A:\run.bat` if necessary. The status indicates
+wait for the desktop, then use Windows Run to launch `A:\kryz.bat /ASCII /COLOR /L en` if necessary. The status indicates
 that launch was requested, not that Windows confirmed successful gameplay.
 
 ## Fixed v86 settings

@@ -61,23 +61,7 @@ runs:
         cp .cache/web-build/ansicon/x86/ansicon.exe .cache/web-build/ansicon/x86/ANSI32.dll "$root/"
         cp .cache/web-build/ansicon/LICENSE.txt "$root/ANSI.TXT"
         cp .cache/web-build/ansicon/LICENSE.txt dist/vendor/ANSICON-LICENSE.txt
-        cat > "$root/run.bat" <<'BAT'
-        @echo off
-        setlocal
-        cd /d A:\
-        mode con cols=125 lines=300
-        set "game_language=en"
-        if /I "%~1"=="lt" set "game_language=lt"
-        if not exist A:\ansicon.exe goto plain
-        A:\ansicon.exe -p
-        if not defined ANSICON goto plain
-        call A:\kryz.bat /ASCII /COLOR /L %game_language%
-        goto end
-        :plain
-        call A:\kryz.bat /ASCII /MONO /L %game_language%
-        :end
-        BAT
-        unix2dos "$root/kryz.bat" "$root/run.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
+        unix2dos "$root/kryz.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
     - name: Package and validate game floppy
       shell: bash
       run: |
