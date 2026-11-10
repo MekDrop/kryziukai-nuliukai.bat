@@ -3,13 +3,38 @@ description: Assemble the static website and game floppy, resolving the latest r
 runs:
   using: composite
   steps:
+    - name: Install packaging tools and download verified ANSICON
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends mtools dosfstools unzip
+        mkdir -p .cache/web-build/ansicon
+        curl -L --fail --retry 3 https://github.com/adoxa/ansicon/releases/download/v1.84/ansi184-bin.zip -o .cache/web-build/ansicon.zip
+        echo '84a40f77f46162d85d0e4275f2956259897d771d1722ef333e5e0efea22de6f0  .cache/web-build/ansicon.zip' | sha256sum -c -
+        unzip -o .cache/web-build/ansicon.zip x86/ansicon.exe x86/ANSI32.dll LICENSE.txt -d .cache/web-build/ansicon
+        cd .cache/web-build/ansicon
+        echo '7b78124871239696d9b0472d6c4411dc69f388bcbde3c5e297dade41f6a1629a  x86/ansicon.exe' | sha256sum -c -
+        echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
     - name: Assemble website
       shell: bash
       run: |
         node --input-type=module <<'NODE'
         import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
-        import { gameFloppy } from './.tools/floppy.mjs';
-        import { renderReleaseLink } from './.tools/release.mjs';
+        const repository = 'MekDrop/kryziukai-nuliukai.bat';
+
+        async function renderReleaseLink(template, fetchRelease = fetch) {
+            const response = await fetchRelease(`https://api.github.com/repos/${repository}/releases/latest`, {
+                headers: { Accept: 'application/vnd.github+json' },
+                signal: AbortSignal.timeout(30_000),
+            });
+            if (!response.ok) throw new Error(`Latest release lookup failed: HTTP ${response.status}`);
+            const release = await response.json();
+            if (typeof release.tag_name !== 'string' || !release.tag_name.trim()) {
+                throw new Error('Latest release has no tag name');
+            }
+            const url = `https://github.com/${repository}/archive/refs/tags/${encodeURIComponent(release.tag_name)}.zip`;
+            return template.replaceAll('{{LATEST_RELEASE_ZIP_URL}}', url);
+        }
         const page = await renderReleaseLink(await readFile('web/index.html', 'utf8'));
         await mkdir('dist/vendor', { recursive: true });
         await writeFile('dist/index.html', page);
@@ -31,12 +56,35 @@ runs:
         const asciiLithuanian = Buffer.from(lithuanian.toString('utf8').normalize('NFD').replace(/\p{M}/gu, ''), 'utf8');
         if (asciiLithuanian.some(byte => byte > 127)) throw new Error('Legacy Lithuanian translation contains non-ASCII characters');
         const ansi = {
-            exe: await readFile(new URL(import.meta.resolve('@kryz/ansicon/ansicon.exe'))),
-            dll: await readFile(new URL(import.meta.resolve('@kryz/ansicon/ANSI32.dll'))),
-            license: await readFile(new URL(import.meta.resolve('@kryz/ansicon/LICENSE.txt'))),
+            exe: await readFile('.cache/web-build/ansicon/x86/ansicon.exe'),
+            dll: await readFile('.cache/web-build/ansicon/x86/ANSI32.dll'),
+            license: await readFile('.cache/web-build/ansicon/LICENSE.txt'),
         };
         await writeFile('dist/vendor/ANSICON-LICENSE.txt', ansi.license);
-        await writeFile('dist/game.img', gameFloppy(crlf(await readFile('kryz.bat')), crlf(await readFile('Language/en.csv')), await readFile('License.txt'), lithuanian, asciiLithuanian, ansi));
+        const root = '.cache/web-build/game';
+        await mkdir(root + '/Language', { recursive: true });
+        for (const [name, data] of [
+            ['kryz.bat', crlf(await readFile('kryz.bat'))],
+            ['Language/en.csv', crlf(await readFile('Language/en.csv'))],
+            ['Language/lt.csv', lithuanian], ['Language/lt.txt', asciiLithuanian],
+            ['LICENSE.TXT', await readFile('License.txt')],
+            ['ansicon.exe', ansi.exe], ['ANSI32.dll', ansi.dll], ['ANSI.TXT', ansi.license],
+            ['run.bat', Buffer.from('@echo off\r\nsetlocal\r\ncd /d A:\\\r\nmode con cols=125 lines=300\r\nset "game_language=en"\r\nif /I "%~1"=="lt" set "game_language=lt"\r\nif not exist A:\\ansicon.exe goto plain\r\nA:\\ansicon.exe -p\r\nif not defined ANSICON goto plain\r\ncall A:\\kryz.bat /ASCII /COLOR /L %game_language%\r\ngoto end\r\n:plain\r\ncall A:\\kryz.bat /ASCII /MONO /L %game_language%\r\n:end\r\n', 'ascii')],
+        ]) await writeFile(root + '/' + name, data);
         await writeFile('dist/.nojekyll', '');
         console.log("Built slim v86 page with the Windows 2000 demo.");
         NODE
+    - name: Package and validate game floppy
+      shell: bash
+      run: |
+        truncate -s 1474560 dist/game.img
+        mkfs.fat -F 12 -n 'KRYZ GAME' dist/game.img
+        mcopy -s -i dist/game.img .cache/web-build/game/* ::/
+        fsck.fat -n dist/game.img
+        mdir -i dist/game.img ::/Language
+        while IFS= read -r -d '' file; do
+          relative="${file#.cache/web-build/game/}"
+          mtype -i dist/game.img "::/$relative" | cmp "$file" -
+        done < <(find .cache/web-build/game -type f -print0)
+        test "$(stat -c %s dist/game.img)" = 1474560
+        if grep -q '{{LATEST_RELEASE_ZIP_URL}}' dist/index.html; then exit 1; fi

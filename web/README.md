@@ -20,10 +20,9 @@ Local builds run it through [act](https://nektosact.com/) using
 containers enabled, and start Docker before building. The first run downloads
 the runner image and actions; `--bind` writes `dist/` back into this checkout.
 
-Requires Node 24. `npm ci` installs the private local `@kryz/ansicon` package,
-whose install hook downloads and verifies the pinned helper release into
-`node_modules/`. The executable and DLL are not kept in Git. Installation scripts
-must be enabled; no separate download command or npm registry account is needed.
+Requires Node 24 for the local npm commands. The action installs packaging tools,
+downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
+using dosfstools and mtools. No local helper package or npm install hook is used.
 
 ```sh
 npm ci
@@ -66,7 +65,7 @@ Dependabot checks npm dependencies and GitHub Actions every four months, on
 January 1, May 1, and September 1 at 09:00 UTC. Security updates, when enabled
 in GitHub, follow GitHub's separate security-update policy.
 
-The `Dependency validation` workflow runs `npm test`, builds the site, and validates the floppy
+The `Dependency validation` workflow builds the site and validates the floppy by extracting and comparing every file
 on pull requests to `master` and pushes to `master`. After a successful PR run,
 a separate workflow enables squash auto-merge only for an open, non-draft PR
 authored by `dependabot[bot]`, targeting `master` from this repository, with a
@@ -120,9 +119,9 @@ The helper adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
 ANSI colors in the launcher process using `-p`, without a permanent registry
 installation. X is cyan, O is magenta, and winning marks are green. ASCII board
 characters remain compatible with the legacy console. If ANSICON is unavailable,
-the wrapper falls back to monochrome. The pinned archive and SHA-256 checksums are in [`.tools/ansicon/download.mjs`](../.tools/ansicon/download.mjs).
+the wrapper falls back to monochrome. The pinned archive and SHA-256 checksums are in [the build action](../.github/actions/build-web/action.yml).
 The [upstream source](https://github.com/adoxa/ansicon/tree/v1.84) supplies the
-zlib license, which is extracted during installation and included in the built
+zlib license, which is extracted by the build action and included in the built
 site and game floppy. Version 1.84 is used because the 1.89 binaries target
 Windows 5.1 and are rejected by Windows 2000.
 

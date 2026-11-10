@@ -5,11 +5,9 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "npx --yes http-server dist -p 8080",
-    "build": "act workflow_dispatch -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest",
-    "test": "node --test .tools/*.test.mjs"
+    "build": "act workflow_dispatch -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest"
   },
   "devDependencies": {
-    "@kryz/ansicon": "file:.tools/ansicon",
     "v86": "0.5.473"
   },
   "engines": {
