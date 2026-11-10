@@ -1,0 +1,80 @@
+name: Build browser demo
+description: Assemble the website and validate the game floppy using CLI tools.
+runs:
+  using: composite
+  steps:
+    - name: Install build tools
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends curl dos2unix mtools dosfstools unzip
+        mkdir -p .cache/web-build/ansicon .cache/web-build/game/Language dist/vendor
+    - name: Download and verify ANSICON
+      shell: bash
+      run: |
+        curl -L --fail --retry 3 https://github.com/adoxa/ansicon/releases/download/v1.84/ansi184-bin.zip -o .cache/web-build/ansicon.zip
+        echo '84a40f77f46162d85d0e4275f2956259897d771d1722ef333e5e0efea22de6f0  .cache/web-build/ansicon.zip' | sha256sum -c -
+        unzip -o .cache/web-build/ansicon.zip x86/ansicon.exe x86/ANSI32.dll LICENSE.txt -d .cache/web-build/ansicon
+        cd .cache/web-build/ansicon
+        echo '7b78124871239696d9b0472d6c4411dc69f388bcbde3c5e297dade41f6a1629a  x86/ansicon.exe' | sha256sum -c -
+        echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
+    - name: Resolve latest release ZIP
+      id: release
+      uses: cardinalby/git-get-release-action@2ab178299eecb253f820dcf2cce11f62be1178f7 # v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        repo: MekDrop/kryziukai-nuliukai.bat
+        latest: 'true'
+        prerelease: 'false'
+    - name: Render website template
+      uses: recih/template-render-action@e9d7eeb6cbcb45411b658bd7a5fe96f8eb253bca # v1.0.2
+      with:
+        engine: mustache
+        template-file: web/index.html.mustache
+        output-file: dist/index.html
+        vars: |
+          { "latestReleaseZipUrl": "${{ steps.release.outputs.zipball_url }}" }
+    - name: Copy website assets
+      shell: bash
+      run: |
+        cp web/favicon.ico dist/
+        cp node_modules/v86/build/libv86.mjs node_modules/v86/build/v86.wasm node_modules/v86/LICENSE dist/vendor/
+        touch dist/.nojekyll
+    - name: Download pinned firmware
+      shell: bash
+      run: |
+        revision=315b2b0b758703ef0e6cc7b4088d6068f83f3c20
+        for file in seabios.bin vgabios.bin COPYING.LESSER fetch-and-build-seabios.sh seabios.config; do
+          curl -L --fail --retry 3 --max-time 60 "https://raw.githubusercontent.com/copy/v86/$revision/bios/$file" -o "dist/vendor/$file"
+        done
+        printf 'SeaBIOS and VGA BIOS: see COPYING.LESSER. Firmware and build recipe: https://github.com/copy/v86/tree/%s/bios\nSeaBIOS source: https://github.com/coreboot/seabios\n' "$revision" > dist/vendor/BIOS-LICENSE.txt
+    - name: Prepare game files
+      shell: bash
+      run: |
+        root=.cache/web-build/game
+        cp kryz.bat "$root/"
+        cp Language/en.csv Language/lt.csv "$root/Language/"
+        # Explicit Lithuanian mapping avoids locale-dependent transliteration.
+        sed 'y/ąčęėįšųūžĄČĘĖĮŠŲŪŽ/aceeisuuzACEEISUUZ/' Language/lt.csv > "$root/Language/lt.txt"
+        iconv -f UTF-8 -t ASCII "$root/Language/lt.txt" -o "$root/Language/lt.txt.checked"
+        mv "$root/Language/lt.txt.checked" "$root/Language/lt.txt"
+        cp License.txt "$root/LICENSE.TXT"
+        cp .cache/web-build/ansicon/x86/ansicon.exe .cache/web-build/ansicon/x86/ANSI32.dll "$root/"
+        cp .cache/web-build/ansicon/LICENSE.txt "$root/ANSI.TXT"
+        cp .cache/web-build/ansicon/LICENSE.txt dist/vendor/ANSICON-LICENSE.txt
+        unix2dos "$root/kryz.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
+    - name: Package and validate game floppy
+      shell: bash
+      run: |
+        truncate -s 1474560 dist/game.img
+        mkfs.fat -F 12 -n 'KRYZ GAME' dist/game.img
+        mcopy -s -i dist/game.img .cache/web-build/game/* ::/
+        fsck.fat -n dist/game.img
+        mdir -i dist/game.img ::/Language
+        while IFS= read -r -d '' file; do
+          relative="${file#.cache/web-build/game/}"
+          mtype -i dist/game.img "::/$relative" | cmp "$file" -
+        done < <(find .cache/web-build/game -type f -print0)
+        test "$(stat -c %s dist/game.img)" = 1474560
+        if grep -q '{{ latestReleaseZipUrl }}' dist/index.html; then exit 1; fi

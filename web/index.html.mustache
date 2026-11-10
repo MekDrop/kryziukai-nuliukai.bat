@@ -17,6 +17,9 @@
   h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
   p { margin: 0; color: #aab5c7; }
   a { color: #9ccaff; text-underline-offset: 3px; }
+  .download { display: inline-block; padding: 10px 14px; border: 1px solid #9ccaff; border-radius: 6px; background: #24394e; color: #eee; text-align: center; text-decoration: none; font-weight: bold; }
+  .download:hover { background: #304d69; }
+  .download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   #status { padding-top: 20px; border-top: 1px solid #303947; color: #eee; font-size: .9rem; }
   .hint, footer { font-size: .8rem; }
   .languages { display: flex; gap: 8px; }
@@ -49,6 +52,7 @@
 <aside>
 <h1>Kryziukai-Nuliukai.bat</h1>
 <p data-i18n="description">The original batch game, running inside Windows 2000.</p>
+<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
 <div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
 <button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
 <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
@@ -107,6 +111,7 @@ const language = new URLSearchParams(location.search).get('lang') === 'lt' ? 'lt
 const text = {
     en: {
         description: 'The original batch game, running inside Windows 2000.',
+        download: 'Download latest release (ZIP)',
         checking: 'Checking machine availability...',
         keyboard: 'Use your keyboard to play. Alt+M captures the mouse.', reload: 'Reload to start fresh.',
         source: 'Source and setup instructions', v86License: 'v86 license', biosLicense: 'BIOS licenses', ansiLicense: 'ANSICON license',
@@ -119,6 +124,7 @@ const text = {
     },
     lt: {
         description: 'Originalus .bat žaidimas Windows 2000 sistemoje.',
+        download: 'Atsisiųsti naujausią versiją (ZIP)',
         checking: 'Tikrinamas virtualus kompiuteris...',
         keyboard: 'Žaiskite klaviatūra. Alt+M užrakina pelę.', reload: 'Įkelkite puslapį iš naujo, kad pradėtumėte iš pradžių.',
         source: 'Kodas ir paleidimo instrukcijos', v86License: 'v86 licencija', biosLicense: 'BIOS licencijos', ansiLicense: 'ANSICON licencija',
@@ -191,7 +197,7 @@ async function runGame() {
     // Windows+R opens Run on the restored Windows 2000 desktop.
     emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
     await sleep(800);
-    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\run.bat ${language}\n`, 20);
+    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
     document.querySelector('#screen_container').focus({ preventScroll: true });
     status.textContent = text.launched;
 }

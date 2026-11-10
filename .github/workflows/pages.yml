@@ -22,15 +22,7 @@ jobs:
       - name: Install all npm dependencies
         run: npm ci --include=dev
       - name: Build website
-        run: npm run build
-      - name: Verify game floppy with independent FAT tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends mtools dosfstools
-          fsck.fat -n dist/game.img
-          mdir -i dist/game.img ::/Language
-          mtype -i dist/game.img ::/kryz.bat | tr -d '\r' > /tmp/kryz-from-floppy.bat
-          tr -d '\r' < kryz.bat | cmp - /tmp/kryz-from-floppy.bat
+        uses: ./.github/actions/build-web
       - name: Upload built website
         uses: actions/upload-pages-artifact@v5
         with:
