@@ -1,79 +1,72 @@
 name: Build browser demo
-description: Assemble the static website and game floppy, resolving the latest release ZIP.
+description: Assemble the website and validate the game floppy using CLI tools.
 runs:
   using: composite
   steps:
-    - name: Install packaging tools and download verified ANSICON
+    - name: Install build tools
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends mtools dosfstools unzip
-        mkdir -p .cache/web-build/ansicon
+        sudo apt-get install -y --no-install-recommends curl jq gettext-base dos2unix mtools dosfstools unzip
+        mkdir -p .cache/web-build/ansicon .cache/web-build/game/Language dist/vendor
+    - name: Download and verify ANSICON
+      shell: bash
+      run: |
         curl -L --fail --retry 3 https://github.com/adoxa/ansicon/releases/download/v1.84/ansi184-bin.zip -o .cache/web-build/ansicon.zip
         echo '84a40f77f46162d85d0e4275f2956259897d771d1722ef333e5e0efea22de6f0  .cache/web-build/ansicon.zip' | sha256sum -c -
         unzip -o .cache/web-build/ansicon.zip x86/ansicon.exe x86/ANSI32.dll LICENSE.txt -d .cache/web-build/ansicon
         cd .cache/web-build/ansicon
         echo '7b78124871239696d9b0472d6c4411dc69f388bcbde3c5e297dade41f6a1629a  x86/ansicon.exe' | sha256sum -c -
         echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
-    - name: Assemble website
+    - name: Resolve release and render page
       shell: bash
       run: |
-        node --input-type=module <<'NODE'
-        import { mkdir, readFile, writeFile, copyFile } from 'node:fs/promises';
-        const repository = 'MekDrop/kryziukai-nuliukai.bat';
-
-        async function renderReleaseLink(template, fetchRelease = fetch) {
-            const response = await fetchRelease(`https://api.github.com/repos/${repository}/releases/latest`, {
-                headers: { Accept: 'application/vnd.github+json' },
-                signal: AbortSignal.timeout(30_000),
-            });
-            if (!response.ok) throw new Error(`Latest release lookup failed: HTTP ${response.status}`);
-            const release = await response.json();
-            if (typeof release.tag_name !== 'string' || !release.tag_name.trim()) {
-                throw new Error('Latest release has no tag name');
-            }
-            const url = `https://github.com/${repository}/archive/refs/tags/${encodeURIComponent(release.tag_name)}.zip`;
-            return template.replaceAll('{{LATEST_RELEASE_ZIP_URL}}', url);
-        }
-        const page = await renderReleaseLink(await readFile('web/index.html', 'utf8'));
-        await mkdir('dist/vendor', { recursive: true });
-        await writeFile('dist/index.html', page);
-        await copyFile('web/favicon.ico', 'dist/favicon.ico');
-        for (const file of ['libv86.mjs', 'v86.wasm']) await copyFile(`node_modules/v86/build/${file}`, `dist/vendor/${file}`);
-        await copyFile('node_modules/v86/LICENSE', 'dist/vendor/LICENSE');
-        // npm's v86 package does not include BIOS files.
-        const revision = '315b2b0b758703ef0e6cc7b4088d6068f83f3c20';
-        for (const file of ['seabios.bin', 'vgabios.bin', 'COPYING.LESSER', 'fetch-and-build-seabios.sh', 'seabios.config']) {
-            const response = await fetch(`https://raw.githubusercontent.com/copy/v86/${revision}/bios/${file}`);
-            if (!response.ok) throw new Error(`Firmware download failed: ${file}: ${response.status}`);
-            await writeFile(`dist/vendor/${file}`, Buffer.from(await response.arrayBuffer()));
-        }
-        await writeFile('dist/vendor/BIOS-LICENSE.txt', 'SeaBIOS and VGA BIOS: see COPYING.LESSER. Firmware and build recipe: https://github.com/copy/v86/tree/' + revision + '/bios\nSeaBIOS source: https://github.com/coreboot/seabios\n');
-        const crlf = bytes => Buffer.from(bytes.toString('utf8').replace(/\r?\n/g, '\r\n'));
-        const lithuanian = crlf(await readFile('Language/lt.csv'));
-        // Windows 2000's console cannot reliably read the UTF-8 translation. Preserve
-        // its wording in a generated ASCII fallback, leaving the source CSV untouched.
-        const asciiLithuanian = Buffer.from(lithuanian.toString('utf8').normalize('NFD').replace(/\p{M}/gu, ''), 'utf8');
-        if (asciiLithuanian.some(byte => byte > 127)) throw new Error('Legacy Lithuanian translation contains non-ASCII characters');
-        const ansi = {
-            exe: await readFile('.cache/web-build/ansicon/x86/ansicon.exe'),
-            dll: await readFile('.cache/web-build/ansicon/x86/ANSI32.dll'),
-            license: await readFile('.cache/web-build/ansicon/LICENSE.txt'),
-        };
-        await writeFile('dist/vendor/ANSICON-LICENSE.txt', ansi.license);
-        const root = '.cache/web-build/game';
-        await mkdir(root + '/Language', { recursive: true });
-        for (const [name, data] of [
-            ['kryz.bat', crlf(await readFile('kryz.bat'))],
-            ['Language/en.csv', crlf(await readFile('Language/en.csv'))],
-            ['Language/lt.csv', lithuanian], ['Language/lt.txt', asciiLithuanian],
-            ['LICENSE.TXT', await readFile('License.txt')],
-            ['ansicon.exe', ansi.exe], ['ANSI32.dll', ansi.dll], ['ANSI.TXT', ansi.license],
-            ['run.bat', Buffer.from('@echo off\r\nsetlocal\r\ncd /d A:\\\r\nmode con cols=125 lines=300\r\nset "game_language=en"\r\nif /I "%~1"=="lt" set "game_language=lt"\r\nif not exist A:\\ansicon.exe goto plain\r\nA:\\ansicon.exe -p\r\nif not defined ANSICON goto plain\r\ncall A:\\kryz.bat /ASCII /COLOR /L %game_language%\r\ngoto end\r\n:plain\r\ncall A:\\kryz.bat /ASCII /MONO /L %game_language%\r\n:end\r\n', 'ascii')],
-        ]) await writeFile(root + '/' + name, data);
-        await writeFile('dist/.nojekyll', '');
-        console.log("Built slim v86 page with the Windows 2000 demo.");
-        NODE
+        curl -L --fail --retry 3 --max-time 30 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/MekDrop/kryziukai-nuliukai.bat/releases/latest -o .cache/web-build/release.json
+        tag=$(jq -er '.tag_name | select(type == "string" and length > 0) | @uri' .cache/web-build/release.json)
+        export LATEST_RELEASE_ZIP_URL="https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/$tag.zip"
+        envsubst '$LATEST_RELEASE_ZIP_URL' < web/index.html > dist/index.html
+        cp web/favicon.ico dist/
+        cp node_modules/v86/build/libv86.mjs node_modules/v86/build/v86.wasm node_modules/v86/LICENSE dist/vendor/
+        touch dist/.nojekyll
+    - name: Download pinned firmware
+      shell: bash
+      run: |
+        revision=315b2b0b758703ef0e6cc7b4088d6068f83f3c20
+        for file in seabios.bin vgabios.bin COPYING.LESSER fetch-and-build-seabios.sh seabios.config; do
+          curl -L --fail --retry 3 --max-time 60 "https://raw.githubusercontent.com/copy/v86/$revision/bios/$file" -o "dist/vendor/$file"
+        done
+        printf 'SeaBIOS and VGA BIOS: see COPYING.LESSER. Firmware and build recipe: https://github.com/copy/v86/tree/%s/bios\nSeaBIOS source: https://github.com/coreboot/seabios\n' "$revision" > dist/vendor/BIOS-LICENSE.txt
+    - name: Prepare game files
+      shell: bash
+      run: |
+        root=.cache/web-build/game
+        cp kryz.bat "$root/"
+        cp Language/en.csv Language/lt.csv "$root/Language/"
+        # Explicit Lithuanian mapping avoids locale-dependent transliteration.
+        sed 'y/ąčęėįšųūžĄČĘĖĮŠŲŪŽ/aceeisuuzACEEISUUZ/' Language/lt.csv > "$root/Language/lt.txt"
+        iconv -f UTF-8 -t ASCII "$root/Language/lt.txt" -o "$root/Language/lt.txt.checked"
+        mv "$root/Language/lt.txt.checked" "$root/Language/lt.txt"
+        cp License.txt "$root/LICENSE.TXT"
+        cp .cache/web-build/ansicon/x86/ansicon.exe .cache/web-build/ansicon/x86/ANSI32.dll "$root/"
+        cp .cache/web-build/ansicon/LICENSE.txt "$root/ANSI.TXT"
+        cp .cache/web-build/ansicon/LICENSE.txt dist/vendor/ANSICON-LICENSE.txt
+        cat > "$root/run.bat" <<'BAT'
+        @echo off
+        setlocal
+        cd /d A:\
+        mode con cols=125 lines=300
+        set "game_language=en"
+        if /I "%~1"=="lt" set "game_language=lt"
+        if not exist A:\ansicon.exe goto plain
+        A:\ansicon.exe -p
+        if not defined ANSICON goto plain
+        call A:\kryz.bat /ASCII /COLOR /L %game_language%
+        goto end
+        :plain
+        call A:\kryz.bat /ASCII /MONO /L %game_language%
+        :end
+        BAT
+        unix2dos "$root/kryz.bat" "$root/run.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
     - name: Package and validate game floppy
       shell: bash
       run: |
@@ -87,4 +80,4 @@ runs:
           mtype -i dist/game.img "::/$relative" | cmp "$file" -
         done < <(find .cache/web-build/game -type f -print0)
         test "$(stat -c %s dist/game.img)" = 1474560
-        if grep -q '{{LATEST_RELEASE_ZIP_URL}}' dist/index.html; then exit 1; fi
+        if grep -q '\$LATEST_RELEASE_ZIP_URL' dist/index.html; then exit 1; fi
