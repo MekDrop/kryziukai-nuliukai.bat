@@ -22,8 +22,9 @@ the runner image and actions; `--bind` writes `dist/` back into this checkout.
 
 Requires Node 24 for the local npm commands. The action installs packaging tools,
 downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
-using dosfstools and mtools. Release lookup and template rendering use curl, jq,
-and envsubst; text preparation uses sed, iconv, and unix2dos. No local helper
+using dosfstools and mtools. Release lookup uses curl and jq. Template rendering uses the pinned
+[chuhlomin/render-template](https://github.com/chuhlomin/render-template) action;
+text preparation uses sed, iconv, and unix2dos. No local helper
 package or npm install hook is used.
 
 ```sh
@@ -36,7 +37,7 @@ without clicking a start button. Select a difficulty and play using the keyboard
 `npm start` runs the local workflow through `act` before starting the local server.
 The same composite action runs in Pages deployment and dependency validation.
 The build resolves
-the latest published GitHub release and replaces `$LATEST_RELEASE_ZIP_URL`
+the latest published GitHub release and replaces `{{ .latestReleaseZipUrl }}`
 in the page template with its tag's ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Use `npm run build` to build without starting a server.

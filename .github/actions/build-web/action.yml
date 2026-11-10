@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends curl jq gettext-base dos2unix mtools dosfstools unzip
+        sudo apt-get install -y --no-install-recommends curl jq dos2unix mtools dosfstools unzip
         mkdir -p .cache/web-build/ansicon .cache/web-build/game/Language dist/vendor
     - name: Download and verify ANSICON
       shell: bash
@@ -18,13 +18,23 @@ runs:
         cd .cache/web-build/ansicon
         echo '7b78124871239696d9b0472d6c4411dc69f388bcbde3c5e297dade41f6a1629a  x86/ansicon.exe' | sha256sum -c -
         echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
-    - name: Resolve release and render page
+    - name: Resolve latest release ZIP
+      id: release
       shell: bash
       run: |
         curl -L --fail --retry 3 --max-time 30 -H 'Accept: application/vnd.github+json' https://api.github.com/repos/MekDrop/kryziukai-nuliukai.bat/releases/latest -o .cache/web-build/release.json
         tag=$(jq -er '.tag_name | select(type == "string" and length > 0) | @uri' .cache/web-build/release.json)
-        export LATEST_RELEASE_ZIP_URL="https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/$tag.zip"
-        envsubst '$LATEST_RELEASE_ZIP_URL' < web/index.html > dist/index.html
+        echo "zip_url=https://github.com/MekDrop/kryziukai-nuliukai.bat/archive/refs/tags/$tag.zip" >> "$GITHUB_OUTPUT"
+    - name: Render website template
+      uses: chuhlomin/render-template@a7c644e341797d050d1cb24332d83791b9a46dae # v1.12
+      with:
+        template: web/index.html
+        result_path: dist/index.html
+        vars: |
+          latestReleaseZipUrl: ${{ steps.release.outputs.zip_url }}
+    - name: Copy website assets
+      shell: bash
+      run: |
         cp web/favicon.ico dist/
         cp node_modules/v86/build/libv86.mjs node_modules/v86/build/v86.wasm node_modules/v86/LICENSE dist/vendor/
         touch dist/.nojekyll
@@ -80,4 +90,4 @@ runs:
           mtype -i dist/game.img "::/$relative" | cmp "$file" -
         done < <(find .cache/web-build/game -type f -print0)
         test "$(stat -c %s dist/game.img)" = 1474560
-        if grep -q '\$LATEST_RELEASE_ZIP_URL' dist/index.html; then exit 1; fi
+        if grep -q '{{ .latestReleaseZipUrl }}' dist/index.html; then exit 1; fi
