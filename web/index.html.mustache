@@ -200,7 +200,10 @@ async function runGame() {
     // Windows+R opens Run on the restored Windows 2000 desktop.
     emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
     await sleep(800);
-    await emulator.keyboard_send_text(`cmd.exe /d /c start "" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
+    // Import guest font and update-notification policies before launching.
+    // START's title selects HKCU\\Console\\Kryz Browser; the batch can then
+    // change its visible title without changing the selected font.
+    await emulator.keyboard_send_text(`cmd.exe /d /c start /wait regedit.exe /s A:\\console.reg & start "Kryz Browser" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
     document.querySelector('#screen_container').focus({ preventScroll: true });
     status.textContent = text.launched;
 }

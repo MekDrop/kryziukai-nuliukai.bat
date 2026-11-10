@@ -56,6 +56,7 @@ runs:
       run: |
         root=.cache/web-build/game
         cp kryz.bat "$root/"
+        cp web/console.reg "$root/console.reg"
         cp Language/en.csv Language/lt.csv "$root/Language/"
         # Explicit Lithuanian mapping avoids locale-dependent transliteration.
         sed 'y/ąčęėįšųūžĄČĘĖĮŠŲŪŽ/aceeisuuzACEEISUUZ/' Language/lt.csv > "$root/Language/lt.txt"
@@ -65,7 +66,7 @@ runs:
         cp .cache/web-build/ansicon/x86/ansicon.exe .cache/web-build/ansicon/x86/ANSI32.dll "$root/"
         cp .cache/web-build/ansicon/LICENSE.txt "$root/ANSI.TXT"
         cp .cache/web-build/ansicon/LICENSE.txt dist/vendor/ANSICON-LICENSE.txt
-        unix2dos "$root/kryz.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
+        unix2dos "$root/console.reg" "$root/kryz.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
     - name: Package and validate game floppy
       shell: bash
       run: |
