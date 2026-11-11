@@ -62,6 +62,13 @@ the runner image and actions; `--bind` writes `dist/` back into this checkout.
 `act` reads `GITHUB_TOKEN` from your environment or prompts for it, for the release
 lookup action. CI uses its automatic read-only GitHub token.
 
+The build configures APT with one retry and 15-second HTTP/HTTPS timeouts so
+GitHub-hosted runners can move sooner to the next configured Ubuntu mirror when
+a mirror is unavailable. These settings also apply to later Playwright dependency
+installation in the same job. Package-index updates fail if errors remain after
+fallback, rather than silently continuing with stale indexes. The runner's mirror
+list and other package sources are preserved.
+
 Requires Node 24 for the local npm commands. The action installs packaging tools,
 downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned

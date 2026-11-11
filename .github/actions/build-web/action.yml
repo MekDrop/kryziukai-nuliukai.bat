@@ -3,6 +3,17 @@ description: Assemble the website and validate the game floppy using CLI tools.
 runs:
   using: composite
   steps:
+    - name: Configure faster APT mirror failover
+      shell: bash
+      run: |
+        # APT retries each mirror before trying the runner's next fallback.
+        # Keep this configuration for later installs, including Playwright deps.
+        printf '%s\n' \
+          'Acquire::Retries "1";' \
+          'Acquire::http::Timeout "15";' \
+          'Acquire::https::Timeout "15";' \
+          'APT::Update::Error-Mode "any";' \
+          | sudo tee /etc/apt/apt.conf.d/zz-kryz-network > /dev/null
     - name: Install build tools
       shell: bash
       run: |
