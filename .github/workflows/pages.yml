@@ -23,12 +23,60 @@ jobs:
         run: npm ci --include=dev
       - name: Build website
         uses: ./.github/actions/build-web
-      - name: Upload built website
-        uses: actions/upload-pages-artifact@v5
+      - name: Upload base website for preview jobs
+        uses: actions/upload-artifact@v6
         with:
-          path: dist
-  deploy:
+          name: web-build-base
+          path: dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+  preview:
+    name: Capture ${{ matrix.language }} preview
     needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: en
+            page: index.html
+          - language: lt
+            page: lt.html
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci --include=dev
+      - uses: actions/download-artifact@v7
+        with:
+          name: web-build-base
+          path: dist/
+      - uses: ./.github/actions/capture-preview
+        with:
+          language: ${{ matrix.language }}
+      - name: Upload localized page and preview
+        uses: actions/upload-artifact@v6
+        with:
+          name: web-preview-${{ matrix.language }}
+          path: |
+            dist/${{ matrix.page }}
+            dist/og-game-${{ matrix.language }}-*.png
+          if-no-files-found: error
+          retention-days: 1
+      - name: Upload preview diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pages-preview-diagnostics-${{ matrix.language }}
+          path: .cache/preview/
+          if-no-files-found: ignore
+          retention-days: 7
+  deploy:
+    needs: [build, preview]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -39,6 +87,27 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+      - name: Download base website
+        uses: actions/download-artifact@v7
+        with:
+          name: web-build-base
+          path: dist/
+      - name: Merge localized pages and previews
+        uses: actions/download-artifact@v7
+        with:
+          pattern: web-preview-*
+          merge-multiple: true
+          path: dist/
+      - name: Validate both pages and sharing images before publishing
+        run: node web/validate-pages.mjs
+      - name: Upload built website
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
       - name: Deploy to GitHub Pages

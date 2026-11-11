@@ -27,16 +27,11 @@ runs:
         repo: MekDrop/kryziukai-nuliukai.bat
         latest: 'true'
         prerelease: 'false'
-    - name: Set up Mustache
-      uses: martoc/action-setup-mo@2791318586696963cce8e0575b73d7c49c3414c4 # v0.1.6
-    - name: Render website template
+    - name: Render English and Lithuanian pages from one template
       shell: bash
       env:
         latestReleaseZipUrl: ${{ steps.release.outputs.zipball_url }}
-      run: |
-        # mo does not HTML-escape: accept only the GitHub archive URL's safe path characters.
-        [[ "$latestReleaseZipUrl" =~ ^https://api\.github\.com/repos/MekDrop/kryziukai-nuliukai\.bat/zipball/[a-zA-Z0-9._~/%-]+$ ]]
-        mo --fail-not-set web/index.html.mustache > dist/index.html
+      run: node web/render-pages.mjs
     - name: Copy website assets
       shell: bash
       run: |
@@ -80,4 +75,4 @@ runs:
           mtype -i dist/game.img "::/$relative" | cmp "$file" -
         done < <(find .cache/web-build/game -type f -print0)
         test "$(stat -c %s dist/game.img)" = 1474560
-        if grep -q '{{ latestReleaseZipUrl }}' dist/index.html; then exit 1; fi
+        if grep -q '{{ latestReleaseZipUrl }}' dist/index.html dist/lt.html; then exit 1; fi

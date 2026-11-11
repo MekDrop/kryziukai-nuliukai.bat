@@ -1,10 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ language }}">
+<head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>Kryziukai-Nuliukai.bat - Windows in your browser</title>
+<title>{{ title }}</title>
+<meta name="description" content="{{ metaDescription }}">
+<link rel="canonical" href="https://mekdrop.github.io/kryziukai-nuliukai.bat/">
+<link rel="alternate" hreflang="en" href="https://mekdrop.github.io/kryziukai-nuliukai.bat/">
+<link rel="alternate" hreflang="lt" href="https://mekdrop.github.io/kryziukai-nuliukai.bat/lt.html">
+<link rel="alternate" hreflang="x-default" href="https://mekdrop.github.io/kryziukai-nuliukai.bat/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ socialTitle }}">
+<meta property="og:description" content="{{ socialDescription }}">
+<meta property="og:url" content="{{{ pageUrl }}}">
+<meta property="og:locale" content="{{ ogLocale }}">
+<meta property="og:locale:alternate" content="{{ alternateLocale }}">
+<meta property="og:image" content="{{{ previewImageUrl }}}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ imageAlt }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ socialTitle }}">
+<meta name="twitter:description" content="{{ socialDescription }}">
+<meta name="twitter:image" content="{{{ previewImageUrl }}}">
+<meta name="twitter:image:alt" content="{{ imageAlt }}">
 <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 <style>
   body { margin: 0; font: 15px/1.6 Arial, Helvetica, sans-serif; background: #141820; color: #eee; }
@@ -23,10 +45,10 @@
   #status { color: #eee; font-size: .9rem; }
   .hint, footer { font-size: .8rem; }
   .languages { display: flex; gap: 8px; }
-  .languages button { display: grid; place-items: center; padding: 8px; background: transparent; border: 1px solid #526075; border-radius: 6px; cursor: pointer; }
-  .languages button[aria-pressed="true"] { background: #24394e; border-color: #9ccaff; }
-  .languages button:hover { background: #24394e; }
-  .languages button:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
+  .languages a { display: grid; place-items: center; padding: 8px; background: transparent; border: 1px solid #526075; border-radius: 6px; }
+  .languages a[aria-current="page"] { background: #24394e; border-color: #9ccaff; }
+  .languages a:hover { background: #24394e; }
+  .languages a:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
   .languages svg { display: block; width: 32px; height: 20px; }
   footer { margin-top: auto; display: grid; gap: 6px; }
   main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0c1016; border: 1px solid #303947; border-radius: 8px; overflow: hidden; }
@@ -46,44 +68,50 @@
     footer { display: flex; flex-wrap: wrap; grid-area: footer; gap: 4px 12px; margin: 0; font-size: .7rem; }
   }
 </style>
+</head>
+<body>
 <div id="compatibility" role="alert">
 <h1>Kryziukai-Nuliukai.bat</h1>
-<div id="compat-en"><p>This browser cannot start the online demo. Enable JavaScript and use a browser with WebAssembly and modern JavaScript support.</p><p>You can still download the original batch game and run it directly on Windows 2000 or newer.</p><p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Download the game and read the instructions</a></p></div>
-<div id="compat-lt"><p>Ši naršyklė negali paleisti internetinės demonstracijos. Įjunkite JavaScript ir naudokite naršyklę, palaikančią WebAssembly bei šiuolaikinį JavaScript.</p><p>Originalų .bat žaidimą galite atsisiųsti ir paleisti tiesiogiai Windows 2000 ar naujesnėje sistemoje.</p><p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Atsisiųsti žaidimą ir skaityti instrukcijas</a></p></div>
+<p>{{ compatibility.unsupported }}</p><p>{{ compatibility.download }}</p>
+<p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ compatibility.link }}</a></p>
+<nav class="languages" aria-label="{{ ui.languages }}"><a href="index.html" hreflang="en" lang="en">{{ ui.en }}</a><a href="lt.html" hreflang="lt" lang="lt">{{ ui.lt }}</a></nav>
 </div>
 <div id="app" style="display: none">
 <aside>
 <h1>Kryziukai-Nuliukai.bat</h1>
-<p data-i18n="description">The original batch game, running inside Windows 2000.</p>
-<div class="languages" role="group" aria-label="Game language" title="Switching language restarts the game">
-<button type="button" data-language="en" aria-label="English" aria-pressed="true" title="English">
+<p>{{ ui.description }}</p>
+<nav class="languages" aria-label="{{ ui.languages }}" title="{{ ui.restart }}">
+<a href="index.html" hreflang="en" lang="en" aria-label="{{ ui.en }}" title="{{ ui.en }}"{{#isEnglish}} aria-current="page"{{/isEnglish}}>
 <svg viewBox="0 0 60 30" preserveAspectRatio="none" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="m0 0 60 30M60 0 0 30"/><path stroke="#c8102e" stroke-width="2" d="m0 0 60 30M60 0 0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>
-</button>
-<button type="button" data-language="lt" aria-label="Lithuanian" aria-pressed="false" title="Lithuanian">
+</a>
+<a href="lt.html" hreflang="lt" lang="lt" aria-label="{{ ui.lt }}" title="{{ ui.lt }}"{{#isLithuanian}} aria-current="page"{{/isLithuanian}}>
 <svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fdb913" d="M0 0h30v7H0z"/><path fill="#006a44" d="M0 7h30v6H0z"/><path fill="#c1272d" d="M0 13h30v7H0z"/></svg>
-</button>
-</div>
-<a class="download" data-i18n="download" href="{{ latestReleaseZipUrl }}">Download latest release (ZIP)</a>
-<p id="status" data-i18n="checking" role="status" aria-live="polite">Checking machine availability...</p>
-<p class="hint" id="machine-input-hint"><span data-i18n="keyboard">Use your keyboard to play. Alt+M captures the mouse.</span><br><span id="mouse-hint" data-i18n="mouseAvailable">Click the machine to capture the mouse. Esc releases it.</span><br><span data-i18n="reload">Reload to start fresh.</span></p>
-<footer><a data-i18n="source" href="https://github.com/MekDrop/kryziukai-nuliukai.bat">Source and setup instructions</a><a data-i18n="v86License" href="vendor/LICENSE">v86 license</a><a data-i18n="biosLicense" href="vendor/BIOS-LICENSE.txt">BIOS licenses</a><a data-i18n="ansiLicense" href="vendor/ANSICON-LICENSE.txt">ANSICON license</a></footer>
+</a>
+</nav>
+<a class="download" href="{{ latestReleaseZipUrl }}">{{ ui.download }}</a>
+<p id="status" role="status" aria-live="polite">{{ ui.checking }}</p>
+<p class="hint" id="machine-input-hint"><span>{{ ui.keyboard }}</span><br><span id="mouse-hint">{{ ui.mouseAvailable }}</span><br><span>{{ ui.reload }}</span></p>
+<footer><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ ui.source }}</a><a href="vendor/LICENSE">{{ ui.v86License }}</a><a href="vendor/BIOS-LICENSE.txt">{{ ui.biosLicense }}</a><a href="vendor/ANSICON-LICENSE.txt">{{ ui.ansiLicense }}</a></footer>
 </aside>
-<main aria-label="Windows 2000 game machine">
-<div id="screen_container" role="application" aria-label="Windows 2000 game machine" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
+<main aria-label="{{ ui.machine }}">
+<div id="screen_container" role="application" aria-label="{{ ui.machine }}" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
 </main>
 </div>
 <script>
 (function () {
-    var lt = /(?:^|[?&])lang=lt(?:&|$)/.test(window.location.search);
-    document.getElementById(lt ? 'compat-en' : 'compat-lt').style.display = 'none';
-    document.documentElement.lang = lt ? 'lt' : 'en';
+    // Preserve old shared language links while keeping each page's language fixed.
+    var previousLanguage = /(?:^|[?&])lang=(en|lt)(?:&|$)/.exec(window.location.search);
+    if (previousLanguage && previousLanguage[1] !== document.documentElement.lang) {
+        window.location.replace(previousLanguage[1] === 'lt' ? 'lt.html' : 'index.html');
+        return;
+    }
     window.kryzBrowserSupported = false;
     try {
         var canvas = document.createElement('canvas');
         var supported = 'noModule' in document.createElement('script') &&
             typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function' &&
             typeof Promise === 'function' && typeof fetch === 'function' &&
-            typeof URL === 'function' && typeof URLSearchParams === 'function' &&
+            typeof URL === 'function' &&
             typeof BigInt === 'function' && typeof ResizeObserver === 'function' &&
             typeof MutationObserver === 'function' && window.CSS &&
             CSS.supports('display', 'grid') && canvas.getContext && canvas.getContext('2d');
@@ -110,56 +138,8 @@ const status = document.querySelector('#status');
 const stage = document.querySelector('main');
 const screen = document.querySelector('#screen_container');
 const canvas = screen.querySelector('canvas');
-const language = new URLSearchParams(location.search).get('lang') === 'lt' ? 'lt' : 'en';
-const text = {
-    en: {
-        description: 'The original batch game, running inside Windows 2000.',
-        download: 'Download latest release (ZIP)',
-        checking: 'Checking machine availability...',
-        keyboard: 'Use your keyboard to play. Alt+M captures the mouse.', reload: 'Reload to start fresh.',
-        source: 'Source and setup instructions', v86License: 'v86 license', biosLicense: 'BIOS licenses', ansiLicense: 'ANSICON license',
-        languages: 'Game language', restart: 'Switching language restarts the game', en: 'English', lt: 'Lithuanian',
-        machine: 'Windows 2000 game machine', title: 'Windows in your browser',
-        mouseAvailable: 'Click the machine to capture the mouse. Esc releases it.',
-        mouseUnavailable: 'Mouse capture unavailable. Click the machine to retry.', mouseCaptured: 'Mouse captured. Press Esc to release it.',
-        launched: 'Game launch requested. Use the Windows console to play.', failed: 'Could not start the machine',
-        loading: 'Loading Windows... First boot can take several minutes.', downloadFailed: 'A machine asset could not be downloaded; reload to retry.',
-    },
-    lt: {
-        description: 'Originalus .bat žaidimas Windows 2000 sistemoje.',
-        download: 'Atsisiųsti naujausią versiją (ZIP)',
-        checking: 'Tikrinamas virtualus kompiuteris...',
-        keyboard: 'Žaiskite klaviatūra. Alt+M užrakina pelę.', reload: 'Įkelkite puslapį iš naujo, kad pradėtumėte iš pradžių.',
-        source: 'Kodas ir paleidimo instrukcijos', v86License: 'v86 licencija', biosLicense: 'BIOS licencijos', ansiLicense: 'ANSICON licencija',
-        languages: 'Žaidimo kalba', restart: 'Pakeitus kalbą žaidimas pradedamas iš naujo', en: 'Anglų', lt: 'Lietuvių',
-        machine: 'Windows 2000 žaidimo kompiuteris', title: 'Windows naršyklėje',
-        mouseAvailable: 'Spustelėkite žaidimo lange, kad užrakintumėte pelę. Esc ją atlaisvina.',
-        mouseUnavailable: 'Pelės užrakinti nepavyko. Spustelėkite lange ir bandykite dar kartą.', mouseCaptured: 'Pelė užrakinta. Paspauskite Esc, kad ją atlaisvintumėte.',
-        launched: 'Žaidimas paleidžiamas. Žaiskite konsolės lange.', failed: 'Nepavyko paleisti virtualaus kompiuterio',
-        loading: 'Paleidžiama Windows... Pirmas paleidimas gali užtrukti kelias minutes.', downloadFailed: 'Nepavyko atsisiųsti failo. Įkelkite puslapį iš naujo.',
-    },
-}[language];
-document.documentElement.lang = language;
-document.title = `Kryziukai-Nuliukai.bat - ${text.title}`;
-for (const element of document.querySelectorAll('[data-i18n]')) element.textContent = text[element.dataset.i18n];
-document.querySelector('.languages').setAttribute('aria-label', text.languages);
-document.querySelector('.languages').title = text.restart;
-stage.setAttribute('aria-label', text.machine);
-screen.setAttribute('aria-label', text.machine);
-for (const button of document.querySelectorAll('[data-language]')) {
-    button.setAttribute('aria-pressed', String(button.dataset.language === language));
-    button.setAttribute('aria-label', text[button.dataset.language]);
-    button.title = text[button.dataset.language];
-    button.addEventListener('click', () => {
-        if (button.dataset.language === language) {
-            screen.focus({ preventScroll: true });
-            return;
-        }
-        const url = new URL(location.href);
-        url.searchParams.set('lang', button.dataset.language);
-        location.assign(url);
-    });
-}
+const language = document.documentElement.lang;
+const text = {{{ runtimeText }}};
 function fitScreen() {
     const scale = Math.min(stage.clientWidth / canvas.width, stage.clientHeight / canvas.height);
     if (!Number.isFinite(scale) || scale <= 0) return;
@@ -249,4 +229,5 @@ try {
 } catch (error) { fail(error); }
 }
 </script>
+</body>
 </html>

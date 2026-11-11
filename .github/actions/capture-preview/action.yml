@@ -1,0 +1,17 @@
+name: Capture localized game preview
+description: Run Windows 2000 and generate sharing screenshots for one or both languages.
+inputs:
+  language:
+    description: Language to capture (en, lt, or all).
+    default: all
+runs:
+  using: composite
+  steps:
+    - name: Install screenshot browser
+      shell: bash
+      run: npx playwright install --with-deps chromium
+    - name: Generate sharing images from the running Windows 2000 game
+      shell: bash
+      env:
+        CAPTURE_LANGUAGE: ${{ inputs.language }}
+      run: node web/capture-preview.mjs "$CAPTURE_LANGUAGE"

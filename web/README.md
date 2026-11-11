@@ -11,8 +11,8 @@ Browsers without the required JavaScript, WebAssembly, canvas, or layout support
 show a plain HTML compatibility message and a link to the downloadable game.
 That message also remains available when modules cannot be parsed or JavaScript
 is disabled. Unsupported browsers do not download the emulator assets. The
-fallback is available in English and Lithuanian; with JavaScript disabled, both
-translations remain visible.
+fallback is rendered in the page's language, including when JavaScript is disabled.
+Ordinary links switch languages without requiring JavaScript.
 
 ## Run locally
 
@@ -30,11 +30,12 @@ Use `npm run build` to build without starting a server.
 
 ## Playing the demo
 
-English is the default. The English and Lithuanian flag buttons in the left
-sidebar restart the VM in the selected language; the selection is stored in the
-page URL, so a plain URL always starts in English.
-The sidebar, loading messages, mouse hints, and accessibility labels switch with
-the game language. The game console opens maximized with a dedicated
+`index.html` is English and `lt.html` is Lithuanian. The flag links in the left
+sidebar navigate between the two pages and restart the VM in that page's language.
+Old `?lang=lt` and `?lang=en` links redirect to the corresponding HTML file when
+JavaScript is available. The sidebar, compatibility message, metadata, loading
+messages, mouse hints, and accessibility labels are rendered in the page's language.
+The game console opens maximized with a dedicated
 20-pixel Lucida Console font profile. The profile is imported inside the guest
 before creating the console, so the font is independent of browser CSS.
 Click the machine or press Alt+M while it is focused to capture the mouse;
@@ -62,23 +63,75 @@ the runner image and actions; `--bind` writes `dist/` back into this checkout.
 lookup action. CI uses its automatic read-only GitHub token.
 
 Requires Node 24 for the local npm commands. The action installs packaging tools,
-downloads and verifies ANSICON, renders the page, and creates the FAT12 floppy
+downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
-[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the pinned
-[martoc/action-setup-mo](https://github.com/martoc/action-setup-mo) composite action
-and the `mo` Mustache engine. This renderer has no JavaScript action runtime and
-emits no action outputs, avoiding both Node runtime and `set-output` deprecations.
-The release URL is passed through the environment and checked against the GitHub
-archive URL format before rendering because `mo` does not HTML-escape values;
-text preparation uses sed, iconv, and unix2dos. No local helper
-package or npm install hook is used.
+[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the
+Mustache npm library, pinned in `package-lock.json`. `web/render-pages.mjs` renders
+the single `web/index.html.mustache` template twice, using `web/locales/en.json`
+and `web/locales/lt.json`. The release URL is passed through the environment and
+checked against the repository's GitHub archive URL format before rendering.
+Mustache escapes translated HTML text and attributes; the runtime messages are
+serialized as JSON with script-closing characters escaped. Text preparation uses
+sed, iconv, and unix2dos. No npm install hook is used.
 
-The same composite action runs in Pages deployment and dependency validation.
+The same build action runs in Pages deployment and dependency validation.
+The separate `.github/actions/capture-preview/` action installs Chromium and
+generates the sharing previews described below.
 The build resolves
 the latest published GitHub release and replaces `{{ latestReleaseZipUrl }}`
 in `web/index.html.mustache` with its release ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
-stale download link. Use `npm run build` to build without starting a server.
+stale download link. Both rendered pages contain the download link. Use
+`npm run build` to build without starting a server.
+
+Both pages declare the English root URL as canonical and `x-default`, with
+reciprocal `hreflang="en"` and `hreflang="lt"` links identifying the translations.
+Each page has its own title, description, Open Graph URL, locale, sharing text,
+image, and image alternative text in the corresponding language, already present
+in the static HTML. English canonicalization deliberately prefers the English
+URL; a separately indexed Lithuanian canonical would require changing that choice.
+
+## Automatic sharing preview
+
+Every complete build generates two fresh **1200 × 630 PNGs**, one from each
+language of the running Windows 2000 game, before publishing. No screenshot needs
+to be taken, edited, committed, or uploaded by hand. The same process runs in local builds and pull
+request validation, so changes to capture dependencies are checked before merging.
+
+The Pages workflow builds the base site once, then runs an English/Lithuanian
+preview matrix in parallel. Each matrix job downloads the same base artifact,
+captures its language, and uploads only its updated HTML file and PNG. Deployment
+waits for both jobs, merges their artifacts over the base site, and runs
+`web/validate-pages.mjs` before uploading the Pages artifact. This checks both
+language relationships and the images' filenames, content hashes, and dimensions.
+Local builds and dependency validation capture both languages sequentially.
+
+`web/capture-preview.mjs` serves `dist/` on a temporary loopback port, opens the
+selected page in headless Chromium with Playwright, and recognizes the actual
+guest display using Tesseract. It waits for that language's difficulty prompt,
+selects Normal, and plays square 5.
+Before capturing, it checks that the board and move prompt are visible and that
+both X and O have added colored pixels. This avoids publishing a loading screen
+or an empty board. The complete guest screen, including its Windows title bar and
+taskbar, is framed alongside the translated game title and description. Browser,
+recognition, and English language-data dependencies are pinned in `package-lock.json`; the OCR runs locally
+in the build and adds no files or requests to the published application.
+
+Each PNG gets a language-specific, content-hashed filename. The build writes its
+absolute public URL into static Open Graph and Twitter card tags in
+`dist/index.html` or `dist/lt.html`, so sharing services can find the image without
+running JavaScript or starting Windows.
+Sharing services may still cache previously scraped page metadata.
+
+A failed or timed-out capture fails the build and prevents Pages deployment.
+The Pages and dependency-validation workflows retain `.cache/preview/` as a
+diagnostic artifact for seven days on failure, including the last guest screen,
+recognized text, page screenshot, and errors. Local diagnostics stay in that
+directory, in an `en/` or `lt/` subdirectory. To repeat capture against an existing
+build after installing Chromium with `npx playwright install chromium`, run
+`npm run preview:generate` for both,
+or `npm run preview:generate -- lt` (or `en`) for one. The script starts and stops
+its own server and browser.
 
 ## Publishing
 
@@ -124,13 +177,15 @@ The workflow builds and deploys only on pushes to `master`. The `github-pages`
 environment must allow deployments from `master`. The workflow tests the FAT12 floppy and
 independently validates it with `fsck.fat` and mtools.
 The pipeline reads the Node version from `package.json` (`engines.node`), runs `npm ci --include=dev`, builds the
-site, uploads `dist/`, configures Pages, then deploys using the built-in
+site, runs the two preview matrix jobs, merges and validates `dist/`, configures Pages, then deploys using the built-in
 `GITHUB_TOKEN`. No separate npm installation, PAT, or deploy key is required.
 Other branches do not trigger this workflow. There are no pull request or
 manual triggers. Active deployments are not cancelled by newer pushes.
 
-Only `dist/` is uploaded. CI does not download, modify, or mirror Microsoft's
-Windows disk or snapshot. v86 and firmware versions are pinned; upstream guest
+Only `dist/` is published to Pages. During preview capture, Chromium fetches the
+upstream Windows snapshot and required disk chunks into its disposable VM;
+the build publishes only the generated screenshot, not Windows disk or snapshot
+files. v86 and firmware versions are pinned; upstream guest
 URLs are external dependencies and may change or disappear. Browser requests
 omit the referring page URL. The image host must allow cross-origin downloads.
 
