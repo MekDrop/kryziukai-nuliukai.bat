@@ -3,10 +3,18 @@ description: Assemble the website and validate the game floppy using CLI tools.
 runs:
   using: composite
   steps:
-    - name: Configure faster APT mirror failover
+    - name: Use public Ubuntu mirrors for APT
       shell: bash
       run: |
-        # APT retries each mirror before trying the runner's next fallback.
+        # Bypass Azure in both runner mirror lists and direct APT sources.
+        for source in /etc/apt/apt-mirrors.txt /etc/apt/apt-*-mirrors.txt \
+          /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+          if [[ -f "$source" ]]; then
+            sudo sed -i -E \
+              's@https?://azure\.archive\.ubuntu\.com/ubuntu/?([[:space:]]|$)@https://archive.ubuntu.com/ubuntu/\1@g' \
+              "$source"
+          fi
+        done
         # Keep this configuration for later installs, including Playwright deps.
         printf '%s\n' \
           'Acquire::Retries "1";' \
