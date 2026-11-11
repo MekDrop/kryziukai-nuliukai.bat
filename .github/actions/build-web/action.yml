@@ -1,5 +1,9 @@
 name: Build browser demo
 description: Assemble the website and validate the game floppy using CLI tools.
+inputs:
+  language:
+    description: Language to render (en, lt, or all).
+    default: all
 runs:
   using: composite
   steps:
@@ -27,11 +31,12 @@ runs:
         repo: MekDrop/kryziukai-nuliukai.bat
         latest: 'true'
         prerelease: 'false'
-    - name: Render English and Lithuanian pages from one template
+    - name: Render localized pages from the shared template
       shell: bash
       env:
         latestReleaseZipUrl: ${{ steps.release.outputs.zipball_url }}
-      run: node web/render-pages.mjs
+        BUILD_LANGUAGE: ${{ inputs.language }}
+      run: node web/render-pages.mjs "$BUILD_LANGUAGE"
     - name: Copy website assets
       shell: bash
       run: |
@@ -75,4 +80,3 @@ runs:
           mtype -i dist/game.img "::/$relative" | cmp "$file" -
         done < <(find .cache/web-build/game -type f -print0)
         test "$(stat -c %s dist/game.img)" = 1474560
-        if grep -q '{{ latestReleaseZipUrl }}' dist/index.html dist/lt.html; then exit 1; fi

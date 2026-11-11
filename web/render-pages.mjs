@@ -8,8 +8,9 @@ if (!/^https:\/\/api\.github\.com\/repos\/MekDrop\/kryziukai-nuliukai\.bat\/zipb
 }
 
 const template = await readFile(new URL('./index.html.mustache', import.meta.url), 'utf8');
+const locales = await loadLocales(process.argv[2]);
 await mkdir('dist', { recursive: true });
-for (const locale of await loadLocales()) {
+for (const locale of locales) {
     const html = Mustache.render(template, {
         ...locale,
         latestReleaseZipUrl,

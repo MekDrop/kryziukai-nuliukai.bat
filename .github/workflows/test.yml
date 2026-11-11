@@ -1,0 +1,35 @@
+name: Test
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+permissions:
+  contents: read
+jobs:
+  test:
+    name: Test (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [en, lt]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Render localized template with a fixture release URL
+        env:
+          TEST_LANGUAGE: ${{ matrix.language }}
+          latestReleaseZipUrl: https://api.github.com/repos/MekDrop/kryziukai-nuliukai.bat/zipball/test-fixture
+        run: node web/render-pages.mjs "$TEST_LANGUAGE"
+      - name: Validate localized page without generating sharing images
+        env:
+          TEST_LANGUAGE: ${{ matrix.language }}
+        run: node web/validate-pages.mjs "$TEST_LANGUAGE" --skip-preview-images

@@ -7,6 +7,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      # act binds both jobs to the same checkout; avoid concurrent file writes.
+      max-parallel: 1
+      matrix:
+        language: [en, lt]
     steps:
       - uses: actions/checkout@v7
         if: ${{ !env.ACT }}
@@ -17,5 +23,11 @@ jobs:
           node-version-file: package.json
       - run: npm ci --include=dev
       - uses: ./.github/actions/build-web
+        with:
+          language: ${{ matrix.language }}
       - uses: ./.github/actions/capture-preview
-      - run: node web/validate-pages.mjs
+        with:
+          language: ${{ matrix.language }}
+      - env:
+          BUILD_LANGUAGE: ${{ matrix.language }}
+        run: node web/validate-pages.mjs "$BUILD_LANGUAGE"

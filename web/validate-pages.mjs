@@ -1,10 +1,14 @@
-// Run after merging the matrix artifacts, so incomplete pages cannot be deployed.
+// Deployment requires real previews; template tests can skip image-file checks.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { loadLocales, siteUrl } from './locales.mjs';
 
-for (const locale of await loadLocales()) {
+const args = process.argv.slice(2);
+const language = args.find(arg => !arg.startsWith('--'));
+const skipPreviewImages = args.includes('--skip-preview-images');
+
+for (const locale of await loadLocales(language)) {
     const html = await readFile(`dist/${locale.filename}`, 'utf8');
     assert(html.includes(`<html lang="${locale.language}">`), `${locale.filename}: wrong document language`);
     assert(html.includes(`<link rel="canonical" href="${siteUrl}">`), `${locale.filename}: missing English canonical`);
@@ -19,6 +23,11 @@ for (const locale of await loadLocales()) {
     assert.equal(html.match(/<meta name="twitter:image" content="([^"]+)">/)?.[1], imageUrl);
     const filename = new URL(imageUrl).pathname.split('/').pop();
     assert.equal(imageUrl, new URL(filename, siteUrl).href, `${locale.filename}: wrong image host`);
+    if (skipPreviewImages) {
+        assert.equal(imageUrl, locale.previewImageUrl, `${locale.filename}: wrong template sharing image`);
+        console.log(`Validated ${locale.filename} without generating a sharing image.`);
+        continue;
+    }
     assert(new RegExp(`^og-game-${locale.language}-[a-f0-9]{16}\\.png$`).test(filename), `${locale.filename}: missing generated ${locale.language} preview`);
     const png = await readFile(`dist/${filename}`);
     assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');

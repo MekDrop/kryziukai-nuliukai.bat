@@ -12,8 +12,7 @@ import { loadLocales } from './locales.mjs';
 
 const root = resolve('dist');
 const requestedLanguage = process.argv[2] || 'all';
-const locales = (await loadLocales()).filter(locale => requestedLanguage === 'all' || locale.language === requestedLanguage);
-if (!locales.length) throw new Error('Capture language must be en, lt, or all.');
+const locales = await loadLocales(requestedLanguage);
 const types = { '.html': 'text/html', '.mjs': 'text/javascript', '.wasm': 'application/wasm', '.png': 'image/png' };
 const server = createServer(async (request, response) => {
     try {

@@ -74,7 +74,7 @@ Mustache escapes translated HTML text and attributes; the runtime messages are
 serialized as JSON with script-closing characters escaped. Text preparation uses
 sed, iconv, and unix2dos. No npm install hook is used.
 
-The same build action runs in Pages deployment and dependency validation.
+The same build action runs in the Build workflow, reused by Pages deployment.
 The separate `.github/actions/capture-preview/` action installs Chromium and
 generates the sharing previews described below.
 The build resolves
@@ -95,16 +95,18 @@ URL; a separately indexed Lithuanian canonical would require changing that choic
 
 Every complete build generates two fresh **1200 × 630 PNGs**, one from each
 language of the running Windows 2000 game, before publishing. No screenshot needs
-to be taken, edited, committed, or uploaded by hand. The same process runs in local builds and pull
-request validation, so changes to capture dependencies are checked before merging.
+to be taken, edited, committed, or uploaded by hand. The same process runs in local
+builds and the pull request Build workflow. The separate Test workflow validates
+templates without starting Windows or generating screenshots.
 
-The Pages workflow builds the base site once, then runs an English/Lithuanian
-preview matrix in parallel. Each matrix job downloads the same base artifact,
-captures its language, and uploads only its updated HTML file and PNG. Deployment
-waits for both jobs, merges their artifacts over the base site, and runs
+The Build workflow uses an English/Lithuanian matrix. Each job renders only its
+language's page, builds the game floppy and website assets, captures its language,
+and uploads the localized build. Pages reuses that workflow. Deployment
+waits for both jobs, merges their artifacts, and runs
 `web/validate-pages.mjs` before uploading the Pages artifact. This checks both
 language relationships and the images' filenames, content hashes, and dimensions.
-Local builds and dependency validation capture both languages sequentially.
+Local builds use the same language matrix, limited to one job at a time because
+act writes both builds into the same checkout.
 
 `web/capture-preview.mjs` serves `dist/` on a temporary loopback port, opens the
 selected page in headless Chromium with Playwright, and recognizes the actual
@@ -124,7 +126,7 @@ running JavaScript or starting Windows.
 Sharing services may still cache previously scraped page metadata.
 
 A failed or timed-out capture fails the build and prevents Pages deployment.
-The Pages and dependency-validation workflows retain `.cache/preview/` as a
+The Build workflow, including Pages builds, retains `.cache/preview/` as a
 diagnostic artifact for seven days on failure, including the last guest screen,
 recognized text, page screenshot, and errors. Local diagnostics stay in that
 directory, in an `en/` or `lt/` subdirectory. To repeat capture against an existing
@@ -141,16 +143,23 @@ Dependabot checks npm dependencies and GitHub Actions every four months, on
 January 1, May 1, and September 1 at 09:00 UTC. Security updates, when enabled
 in GitHub, follow GitHub's separate security-update policy.
 
-The `Dependency validation` workflow builds the site and validates the floppy by extracting and comparing every file
-on pull requests to `master` and pushes to `master`. After a successful PR run,
-a separate workflow enables squash auto-merge only for an open, non-draft PR
+**Build** and **Test** are separate workflows, each with an English/Lithuanian
+matrix. Build runs on pull requests to `master` and is reused by Pages on pushes
+to `master`. It assembles each localized site, validates the floppy by extracting
+and comparing every file, and generates sharing screenshots. Test runs on pull
+requests and pushes to `master`; it renders each template with a fixture release
+URL and validates the page and sharing metadata without generating screenshots,
+installing Chromium, or launching the VM.
+After both workflows pass for the same PR commit, a separate workflow enables
+squash auto-merge only for an open, non-draft PR
 authored by `dependabot[bot]`, targeting `master` from this repository, with a
 head commit matching the tested commit. The privileged workflow never runs PR
 code or downloads its artifacts. Major updates are eligible too.
 
 Enable **Allow auto-merge** and **Allow squash merging** in repository settings.
-Protect `master` with **Test and build** as a required status check so GitHub
-also enforces CI when merging, along with any other required checks/reviews.
+Protect `master` with **Build (en)**, **Build (lt)**, **Test (en)**, and **Test (lt)**
+as required status checks so GitHub also enforces CI when merging, along with any
+other required checks/reviews.
 Workflows become active after these files land on the default branch.
 Merges using `GITHUB_TOKEN` do not trigger push workflows, so an automatically
 merged update will be included in the next Pages deployment triggered by a
