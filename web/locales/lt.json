@@ -1,0 +1,43 @@
+{
+  "title": "Kryziukai-Nuliukai.bat - Windows naršyklėje",
+  "metaDescription": "Žaiskite originalų kryžiukų ir nuliukų .bat žaidimą Windows 2000 sistemoje tiesiog savo naršyklėje.",
+  "socialTitle": "Kryziukai-Nuliukai.bat — kryžiukai ir nuliukai Windows 2000 sistemoje",
+  "socialDescription": "Tikras .bat žaidimas Windows 2000 sistemoje. Žaiskite savo naršyklėje.",
+  "imageAlt": "Kryžiukų ir nuliukų žaidimas tikrame Windows 2000 komandų lange.",
+  "compatibility": {
+    "unsupported": "Ši naršyklė negali paleisti internetinės demonstracijos. Įjunkite JavaScript ir naudokite naršyklę, palaikančią WebAssembly bei šiuolaikinį JavaScript.",
+    "download": "Originalų .bat žaidimą galite atsisiųsti ir paleisti tiesiogiai Windows 2000 ar naujesnėje sistemoje.",
+    "link": "Atsisiųsti žaidimą ir skaityti instrukcijas"
+  },
+  "ui": {
+    "description": "Originalus .bat žaidimas Windows 2000 sistemoje.",
+    "download": "Atsisiųsti naujausią versiją (ZIP)",
+    "checking": "Tikrinamas virtualus kompiuteris...",
+    "keyboard": "Žaiskite klaviatūra. Alt+M užrakina pelę.",
+    "reload": "Įkelkite puslapį iš naujo, kad pradėtumėte iš pradžių.",
+    "source": "Kodas ir paleidimo instrukcijos",
+    "v86License": "v86 licencija",
+    "biosLicense": "BIOS licencijos",
+    "ansiLicense": "ANSICON licencija",
+    "languages": "Žaidimo kalba",
+    "restart": "Pakeitus kalbą žaidimas pradedamas iš naujo",
+    "en": "Anglų",
+    "lt": "Lietuvių",
+    "machine": "Windows 2000 žaidimo kompiuteris",
+    "mouseAvailable": "Spustelėkite žaidimo lange, kad užrakintumėte pelę. Esc ją atlaisvina.",
+    "mouseUnavailable": "Pelės užrakinti nepavyko. Spustelėkite lange ir bandykite dar kartą.",
+    "mouseCaptured": "Pelė užrakinta. Paspauskite Esc, kad ją atlaisvintumėte.",
+    "launched": "Žaidimas paleidžiamas. Žaiskite konsolės lange.",
+    "failed": "Nepavyko paleisti virtualaus kompiuterio",
+    "loading": "Paleidžiama Windows... Pirmas paleidimas gali užtrukti kelias minutes.",
+    "downloadFailed": "Nepavyko atsisiųsti failo. Įkelkite puslapį iš naujo."
+  },
+  "preview": {
+    "difficultyPrompt": "Pasirink sunkuma",
+    "turn": "Tavo ejimas",
+    "choose": "Rinkis langeli",
+    "heading": ["KRYŽIUKAI", "IR", "NULIUKAI"],
+    "description": [".bat žaidimas.", "Windows 2000.", "Jūsų naršyklėje."],
+    "footer": "ŽAISKITE INTERNETU · BE DIEGIMO"
+  }
+}

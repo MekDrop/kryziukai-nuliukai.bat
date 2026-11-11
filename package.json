@@ -5,9 +5,14 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "npx --yes http-server dist -p 8080",
-    "build": "act workflow_dispatch -s GITHUB_TOKEN -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest"
+    "build": "act workflow_dispatch -s GITHUB_TOKEN -W .github/workflows/local-web.yml -j build --bind -P ubuntu-latest=catthehacker/ubuntu:act-latest",
+    "preview:generate": "node web/capture-preview.mjs"
   },
   "devDependencies": {
+    "@tesseract.js-data/eng": "1.0.0",
+    "mustache": "4.2.0",
+    "playwright": "1.65.0",
+    "tesseract.js": "7.0.0",
     "v86": "0.5.473"
   },
   "engines": {

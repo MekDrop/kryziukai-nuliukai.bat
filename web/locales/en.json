@@ -1,0 +1,43 @@
+{
+  "title": "Kryziukai-Nuliukai.bat - Windows in your browser",
+  "metaDescription": "Play the original batch Tic-Tac-Toe game inside Windows 2000, directly in your browser.",
+  "socialTitle": "Kryziukai-Nuliukai.bat — Tic-Tac-Toe on Windows 2000",
+  "socialDescription": "A real .bat game running inside Windows 2000. Play it in your browser.",
+  "imageAlt": "Tic-Tac-Toe running in a real Windows 2000 command window.",
+  "compatibility": {
+    "unsupported": "This browser cannot start the online demo. Enable JavaScript and use a browser with WebAssembly and modern JavaScript support.",
+    "download": "You can still download the original batch game and run it directly on Windows 2000 or newer.",
+    "link": "Download the game and read the instructions"
+  },
+  "ui": {
+    "description": "The original batch game, running inside Windows 2000.",
+    "download": "Download latest release (ZIP)",
+    "checking": "Checking machine availability...",
+    "keyboard": "Use your keyboard to play. Alt+M captures the mouse.",
+    "reload": "Reload to start fresh.",
+    "source": "Source and setup instructions",
+    "v86License": "v86 license",
+    "biosLicense": "BIOS licenses",
+    "ansiLicense": "ANSICON license",
+    "languages": "Game language",
+    "restart": "Switching language restarts the game",
+    "en": "English",
+    "lt": "Lithuanian",
+    "machine": "Windows 2000 game machine",
+    "mouseAvailable": "Click the machine to capture the mouse. Esc releases it.",
+    "mouseUnavailable": "Mouse capture unavailable. Click the machine to retry.",
+    "mouseCaptured": "Mouse captured. Press Esc to release it.",
+    "launched": "Game launch requested. Use the Windows console to play.",
+    "failed": "Could not start the machine",
+    "loading": "Loading Windows... First boot can take several minutes.",
+    "downloadFailed": "A machine asset could not be downloaded; reload to retry."
+  },
+  "preview": {
+    "difficultyPrompt": "Choose difficulty",
+    "turn": "Your turn",
+    "choose": "Choose square",
+    "heading": ["TIC", "TAC", "TOE."],
+    "description": ["A batch game.", "Windows 2000.", "In your browser."],
+    "footer": "PLAY ONLINE · NO INSTALL"
+  }
+}

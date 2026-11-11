@@ -8,7 +8,7 @@ A Tic-Tac-Toe game for Windows, available in English and Lithuanian. You play as
 Play
 ====
 
-The easiest way is to **[play online](https://mekdrop.github.io/kryziukai-nuliukai.bat/)**. Wait for Windows to load inside your browser; the game opens automatically. Click inside the game, choose a difficulty, and use your keyboard to play. The flag buttons switch between English and Lithuanian. Refreshing the page starts a fresh session.
+The easiest way is to **[play online in English](https://mekdrop.github.io/kryziukai-nuliukai.bat/)** or **[Lithuanian](https://mekdrop.github.io/kryziukai-nuliukai.bat/lt.html)**. Wait for Windows to load inside your browser; the game opens automatically. Click inside the game, choose a difficulty, and use your keyboard to play. The flag links switch between the English and Lithuanian pages. Refreshing the page starts a fresh session.
 
 To play on your own Windows computer:
 

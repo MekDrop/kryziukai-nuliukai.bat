@@ -10,7 +10,7 @@ jobs:
   test:
     name: Test and build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -21,3 +21,13 @@ jobs:
           cache: npm
       - run: npm ci --include=dev
       - uses: ./.github/actions/build-web
+      - uses: ./.github/actions/capture-preview
+      - run: node web/validate-pages.mjs
+      - name: Upload preview diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: validation-preview-diagnostics
+          path: .cache/preview/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -6,7 +6,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         if: ${{ !env.ACT }}
@@ -17,3 +17,5 @@ jobs:
           node-version-file: package.json
       - run: npm ci --include=dev
       - uses: ./.github/actions/build-web
+      - uses: ./.github/actions/capture-preview
+      - run: node web/validate-pages.mjs
