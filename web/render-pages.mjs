@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import Mustache from 'mustache';
 import { loadLocales } from './locales.mjs';
 
@@ -8,12 +9,15 @@ if (!/^https:\/\/api\.github\.com\/repos\/MekDrop\/kryziukai-nuliukai\.bat\/zipb
 }
 
 const template = await readFile(new URL('./index.html.mustache', import.meta.url), 'utf8');
+const stylesheet = await readFile(new URL('./styles.css', import.meta.url));
+const stylesHash = createHash('sha256').update(stylesheet).digest('hex').slice(0, 16);
 const locales = await loadLocales(process.argv[2]);
 await mkdir('dist', { recursive: true });
 for (const locale of locales) {
     const html = Mustache.render(template, {
         ...locale,
         latestReleaseZipUrl,
+        stylesHash,
         // This is inserted into a script, so prevent text from closing that tag.
         runtimeText: JSON.stringify(locale.ui).replaceAll('<', '\\u003c'),
     });

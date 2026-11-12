@@ -7,6 +7,8 @@ import { loadLocales, siteUrl } from './locales.mjs';
 const args = process.argv.slice(2);
 const language = args.find(arg => !arg.startsWith('--'));
 const skipPreviewImages = args.includes('--skip-preview-images');
+const stylesheet = await readFile(skipPreviewImages ? new URL('./styles.css', import.meta.url) : 'dist/styles.css');
+const stylesHash = createHash('sha256').update(stylesheet).digest('hex').slice(0, 16);
 
 for (const locale of await loadLocales(language)) {
     const html = await readFile(`dist/${locale.filename}`, 'utf8');
@@ -18,6 +20,7 @@ for (const locale of await loadLocales(language)) {
     assert(html.includes(`<meta property="og:url" content="${locale.pageUrl}">`), `${locale.filename}: wrong sharing URL`);
     assert(html.includes(`<meta property="og:locale" content="${locale.ogLocale}">`), `${locale.filename}: wrong sharing locale`);
     assert(!/{{[\s\S]*?}}/.test(html), `${locale.filename}: unresolved template data`);
+    assert(html.includes(`<link rel="stylesheet" href="styles.css?v=${stylesHash}">`), `${locale.filename}: stylesheet URL does not match its content hash`);
     const imageUrl = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
     assert(imageUrl, `${locale.filename}: missing sharing image`);
     assert.equal(html.match(/<meta name="twitter:image" content="([^"]+)">/)?.[1], imageUrl);
