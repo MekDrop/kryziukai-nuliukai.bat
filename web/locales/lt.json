@@ -1,8 +1,8 @@
 {
-  "title": "Kryziukai-Nuliukai.bat - Windows naršyklėje",
-  "metaDescription": "Žaiskite originalų kryžiukų ir nuliukų .bat žaidimą Windows 2000 sistemoje tiesiog savo naršyklėje.",
-  "socialTitle": "Kryziukai-Nuliukai.bat — kryžiukai ir nuliukai Windows 2000 sistemoje",
-  "socialDescription": "Tikras .bat žaidimas Windows 2000 sistemoje. Žaiskite savo naršyklėje.",
+  "title": "Kryziukai-Nuliukai.bat - Windows Batch kryžiukai ir nuliukai",
+  "metaDescription": "Windows Batch (.bat) kalba parašytas kryžiukų ir nuliukų žaidimas. Išbandykite tiesiog naršyklėje.",
+  "socialTitle": "Kryziukai-Nuliukai.bat — Windows Batch kryžiukai ir nuliukai",
+  "socialDescription": "Windows Batch (.bat) kalba parašytas kryžiukų ir nuliukų žaidimas. Žaiskite savo naršyklėje.",
   "imageAlt": "Kryžiukų ir nuliukų žaidimas tikrame Windows 2000 komandų lange.",
   "compatibility": {
     "unsupported": "Ši naršyklė negali paleisti internetinės demonstracijos. Įjunkite JavaScript ir naudokite naršyklę, palaikančią WebAssembly bei šiuolaikinį JavaScript.",
