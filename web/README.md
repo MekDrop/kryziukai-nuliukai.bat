@@ -14,6 +14,10 @@ is disabled. Unsupported browsers do not download the emulator assets. The
 fallback is rendered in the page's language, including when JavaScript is disabled.
 Ordinary links switch languages without requiring JavaScript.
 
+Each build adds the first 16 hexadecimal characters of the stylesheet's SHA-256
+hash to its URL (`styles.css?v=...`) on both pages. CSS changes produce a new URL
+so browsers fetch the updated styles instead of reusing a stale cached copy.
+
 The three license links open in a dark, scrollable div-based dialog using
 [SimpleModal](https://www.ericmmartin.com/projects/simplemodal/) 1.4.5 and jQuery
 1.12.4 from CDNs, pinned with Subresource Integrity. The build also downloads
