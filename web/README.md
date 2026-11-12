@@ -164,8 +164,9 @@ in GitHub, follow GitHub's separate security-update policy.
 
 **Build** and **Test** are separate workflows, each with an English/Lithuanian
 matrix. Build runs on pull requests to `master` and is reused by Pages on pushes
-to `master`. It assembles each localized site, validates the floppy by extracting
-and comparing every file, and generates sharing screenshots. Test runs on pull
+to `master` and published stable releases. It assembles each localized site,
+validates the floppy by extracting and comparing every file, and generates
+sharing screenshots. Test runs on pull
 requests and pushes to `master`; it renders each template with a fixture release
 URL and validates the page and sharing metadata without generating screenshots,
 installing Chromium, or launching the VM.
@@ -182,7 +183,7 @@ other required checks/reviews.
 Workflows become active after these files land on the default branch.
 Merges using `GITHUB_TOKEN` do not trigger push workflows, so an automatically
 merged update will be included in the next Pages deployment triggered by a
-regular push.
+regular push or published stable release.
 
 To auto-merge GitHub Actions updates, create a fine-grained personal access
 token restricted to this repository with **Contents: Read and write**,
@@ -201,14 +202,26 @@ short-lived GitHub App installation token as this persistent secret.
 ### GitHub Pages
 
 In GitHub **Settings → Pages → Build and deployment**, choose **GitHub Actions**.
-The workflow builds and deploys only on pushes to `master`. The `github-pages`
-environment must allow deployments from `master`. The workflow tests the FAT12 floppy and
-independently validates it with `fsck.fat` and mtools.
+The workflow builds and deploys on pushes to `master` and when a stable GitHub
+release is published (`release: published`). Drafts and prereleases do not deploy.
+Push builds use the pushed commit; release builds use the release's tagged commit,
+which must contain this workflow and its shared build files.
+
+In **Settings → Environments → github-pages → Deployment branches and tags**,
+allow the `master` branch and add a **Tag** rule matching your release tags
+(for example, `v*`). Release runs use tag refs, so the existing `master` branch
+rule alone will block their deployment. Publish releases through the GitHub UI
+or an API token that can trigger workflows; releases created using another
+workflow's `GITHUB_TOKEN` do not trigger this workflow.
+
+The workflow tests the FAT12 floppy and independently validates it with
+`fsck.fat` and mtools.
 The pipeline reads the Node version from `package.json` (`engines.node`), runs `npm ci --include=dev`, builds the
 site, runs the two preview matrix jobs, merges and validates `dist/`, configures Pages, then deploys using the built-in
 `GITHUB_TOKEN`. No separate npm installation, PAT, or deploy key is required.
-Other branches do not trigger this workflow. There are no pull request or
-manual triggers. Active deployments are not cancelled by newer pushes.
+Other branch pushes and tag pushes alone do not trigger this workflow. There are
+no pull request or manual triggers. Active deployments are not cancelled by newer
+pushes or releases.
 
 Only `dist/` is published to Pages. During preview capture, Chromium fetches the
 upstream Windows snapshot and required disk chunks into its disposable VM;
