@@ -1,7 +1,7 @@
 name: Auto-merge Dependabot
 on:
   workflow_run:
-    workflows: [Dependency validation]
+    workflows: [Build, Test]
     types: [completed]
 permissions:
   contents: read
@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      actions: read
       contents: write
       pull-requests: write
     steps:
@@ -27,6 +28,14 @@ jobs:
           TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
+          # Both independent workflows must pass for this exact commit.
+          for workflow in build.yml test.yml; do
+            conclusion=$(gh run list --workflow "$workflow" --commit "$TESTED_SHA" --event pull_request --limit 1 --json conclusion --jq '.[0].conclusion')
+            if [[ "$conclusion" != success ]]; then
+              echo "Waiting for $workflow to pass for $TESTED_SHA."
+              exit 0
+            fi
+          done
           missing_token=false
           for number in $(gh api "repos/$GH_REPO/actions/runs/$RUN_ID" --jq '.pull_requests[].number'); do
             pr=$(gh api "repos/$GH_REPO/pulls/$number")

@@ -1,0 +1,50 @@
+name: Build
+on:
+  pull_request:
+    branches: [master]
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [en, lt]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci --include=dev
+      - uses: ./.github/actions/build-web
+        with:
+          language: ${{ matrix.language }}
+      - uses: ./.github/actions/capture-preview
+        with:
+          language: ${{ matrix.language }}
+      - name: Validate localized page and sharing image
+        env:
+          BUILD_LANGUAGE: ${{ matrix.language }}
+        run: node web/validate-pages.mjs "$BUILD_LANGUAGE"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: web-build-${{ matrix.language }}
+          path: dist/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+      - name: Upload preview diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-preview-diagnostics-${{ matrix.language }}
+          path: .cache/preview/
+          if-no-files-found: ignore
+          retention-days: 7
