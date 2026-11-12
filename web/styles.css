@@ -1,0 +1,38 @@
+body { margin: 0; font: 15px/1.6 Arial, Helvetica, sans-serif; background: #141820; color: #eee; }
+* { box-sizing: border-box; }
+#compatibility { max-width: 640px; margin: 3em auto; padding: 24px; font-size: 16px; line-height: 1.6; }
+#compatibility p { margin: 1em 0; }
+#compatibility h1 { margin-bottom: 1em; }
+#app { height: 100vh; height: 100dvh; margin: 0; padding: 24px; display: none; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; }
+aside { min-height: 0; display: flex; flex-direction: column; gap: 20px; }
+h1 { margin: 0; font-size: 1.65rem; line-height: 1.2; overflow-wrap: anywhere; letter-spacing: -.04em; }
+p { margin: 0; color: #aab5c7; }
+a { color: #9ccaff; text-underline-offset: 3px; }
+.download { display: block; padding: 9px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; text-align: center; text-decoration: none; font-size: .8rem; font-weight: bold; }
+.download:hover { background: #304d69; }
+.download:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
+#status { color: #eee; font-size: .9rem; }
+.hint, footer { font-size: .8rem; }
+.languages { display: flex; gap: 8px; }
+.languages a { display: grid; place-items: center; padding: 8px; background: transparent; border: 1px solid #526075; border-radius: 6px; }
+.languages a[aria-current="page"] { background: #24394e; border-color: #9ccaff; }
+.languages a:hover { background: #24394e; }
+.languages a:focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
+.languages svg { display: block; width: 32px; height: 20px; }
+footer { margin-top: auto; display: grid; gap: 6px; }
+main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0c1016; border: 1px solid #303947; border-radius: 8px; overflow: hidden; }
+#screen_container { flex: none; background: #000; line-height: 0; }
+#screen_container:focus-visible { outline: 2px solid #9ccaff; outline-offset: -2px; }
+#screen_container > div { white-space: pre; font: 14px monospace; line-height: 14px; }
+canvas { display: none; width: 100% !important; height: 100% !important; }
+@media (max-width: 700px) {
+  #app { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  aside { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "title description" "languages languages" "download download" "status hint" "footer footer"; gap: 8px 16px; }
+  aside > h1 { grid-area: title; } aside > p:first-of-type { grid-area: description; }
+  .languages { grid-area: languages; }
+  h1 { font-size: 1.2rem; } aside > p:first-of-type { font-size: .8rem; }
+  #status { grid-area: status; font-size: .75rem; }
+  .hint { grid-area: hint; font-size: .7rem; }
+  .download { grid-area: download; padding: 7px 10px; font-size: .7rem; }
+  footer { display: flex; flex-wrap: wrap; grid-area: footer; gap: 4px 12px; margin: 0; font-size: .7rem; }
+}

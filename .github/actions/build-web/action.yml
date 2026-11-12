@@ -40,7 +40,7 @@ runs:
     - name: Copy website assets
       shell: bash
       run: |
-        cp web/favicon.ico dist/
+        cp web/favicon.ico web/styles.css dist/
         cp node_modules/v86/build/libv86.mjs node_modules/v86/build/v86.wasm node_modules/v86/LICENSE dist/vendor/
         touch dist/.nojekyll
     - name: Download pinned firmware

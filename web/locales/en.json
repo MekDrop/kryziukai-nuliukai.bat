@@ -1,8 +1,8 @@
 {
-  "title": "Kryziukai-Nuliukai.bat - Windows in your browser",
-  "metaDescription": "Play the original batch Tic-Tac-Toe game inside Windows 2000, directly in your browser.",
-  "socialTitle": "Kryziukai-Nuliukai.bat — Tic-Tac-Toe on Windows 2000",
-  "socialDescription": "A real .bat game running inside Windows 2000. Play it in your browser.",
+  "title": "Kryziukai-Nuliukai.bat - Windows Batch Tic-Tac-Toe",
+  "metaDescription": "Tic-Tac-Toe written in Windows Batch (.bat). Try the original game directly in your browser.",
+  "socialTitle": "Kryziukai-Nuliukai.bat — Windows Batch Tic-Tac-Toe",
+  "socialDescription": "A Tic-Tac-Toe game written in Windows Batch (.bat). Play it in your browser.",
   "imageAlt": "Tic-Tac-Toe running in a real Windows 2000 command window.",
   "compatibility": {
     "unsupported": "This browser cannot start the online demo. Enable JavaScript and use a browser with WebAssembly and modern JavaScript support.",
