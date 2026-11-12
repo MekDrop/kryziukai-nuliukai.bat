@@ -11,7 +11,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends curl dos2unix mtools dosfstools unzip
+        sudo apt-get install -y --no-install-recommends curl dos2unix mtools dosfstools unzip gcc-mingw-w64-i686
         mkdir -p .cache/web-build/ansicon .cache/web-build/game/Language dist/vendor
     - name: Download and verify ANSICON
       shell: bash
@@ -40,9 +40,17 @@ runs:
     - name: Copy website assets
       shell: bash
       run: |
-        cp web/favicon.ico web/styles.css dist/
+        cp web/favicon.ico web/styles.css web/licenses.js dist/
+        cp web/modal-licenses.txt dist/vendor/MODAL-LICENSES.txt
         cp node_modules/v86/build/libv86.mjs node_modules/v86/build/v86.wasm node_modules/v86/LICENSE dist/vendor/
         touch dist/.nojekyll
+    - name: Download and verify modal libraries
+      shell: bash
+      run: |
+        curl -L --fail --retry 3 --max-time 60 https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js -o dist/vendor/jquery-1.12.4.min.js
+        curl -L --fail --retry 3 --max-time 60 https://cdn.jsdelivr.net/gh/ericmmartin/simplemodal@156e9d7e6967ac239f997e883a7882b36b4403b0/src/jquery.simplemodal.js -o dist/vendor/jquery.simplemodal-1.4.5.js
+        echo '668b046d12db350ccba6728890476b3efee53b2f42dbb84743e5e9f1ae0cc404  dist/vendor/jquery-1.12.4.min.js' | sha256sum -c -
+        echo '3f9be07d4a6c2abceb29bde7a578aa1c85dc1ecdd2d14d284e6b6075d40db67e  dist/vendor/jquery.simplemodal-1.4.5.js' | sha256sum -c -
     - name: Download pinned firmware
       shell: bash
       run: |
@@ -67,6 +75,11 @@ runs:
         cp .cache/web-build/ansicon/LICENSE.txt "$root/ANSI.TXT"
         cp .cache/web-build/ansicon/LICENSE.txt dist/vendor/ANSICON-LICENSE.txt
         unix2dos "$root/console.reg" "$root/kryz.bat" "$root/Language/en.csv" "$root/Language/lt.csv" "$root/Language/lt.txt"
+    - name: Build Windows 2000 restart-prompt guard
+      shell: bash
+      run: |
+        i686-w64-mingw32-gcc -Os -Wall -Wextra -Werror -fno-stack-protector -nostdlib web/guest-guard.c -o .cache/web-build/game/guard.exe \
+          -Wl,--entry,_guard_main,--subsystem,windows:5.0,--major-os-version,5,--minor-os-version,0 -luser32 -lkernel32
     - name: Package and validate game floppy
       shell: bash
       run: |

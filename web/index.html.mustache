@@ -36,6 +36,7 @@
 <p>{{ compatibility.unsupported }}</p><p>{{ compatibility.download }}</p>
 <p><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ compatibility.link }}</a></p>
 <nav class="languages" aria-label="{{ ui.languages }}"><a href="index.html" hreflang="en" lang="en">{{ ui.en }}</a><a href="lt.html" hreflang="lt" lang="lt">{{ ui.lt }}</a></nav>
+<div class="license-links"><a href="vendor/LICENSE" data-license>{{ ui.v86License }}</a> <a href="vendor/BIOS-LICENSE.txt" data-license>{{ ui.biosLicense }}</a> <a href="vendor/ANSICON-LICENSE.txt" data-license>{{ ui.ansiLicense }}</a></div>
 </div>
 <div id="app">
 <aside>
@@ -52,11 +53,17 @@
 <a class="download" href="{{ latestReleaseZipUrl }}">{{ ui.download }}</a>
 <p id="status" role="status" aria-live="polite">{{ ui.checking }}</p>
 <p class="hint" id="machine-input-hint"><span>{{ ui.keyboard }}</span><br><span id="mouse-hint">{{ ui.mouseAvailable }}</span><br><span>{{ ui.reload }}</span></p>
-<footer><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ ui.source }}</a><a href="vendor/LICENSE">{{ ui.v86License }}</a><a href="vendor/BIOS-LICENSE.txt">{{ ui.biosLicense }}</a><a href="vendor/ANSICON-LICENSE.txt">{{ ui.ansiLicense }}</a></footer>
+<footer><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ ui.source }}</a><a href="vendor/LICENSE" data-license>{{ ui.v86License }}</a><a href="vendor/BIOS-LICENSE.txt" data-license>{{ ui.biosLicense }}</a><a href="vendor/ANSICON-LICENSE.txt" data-license>{{ ui.ansiLicense }}</a></footer>
 </aside>
 <main aria-label="{{ ui.machine }}">
 <div id="screen_container" role="application" aria-label="{{ ui.machine }}" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
 </main>
+</div>
+<div id="license-modal" class="license-dialog" role="dialog" aria-modal="true" aria-labelledby="license-title" aria-hidden="true" data-loading="{{ ui.licenseLoading }}" data-failed="{{ ui.licenseFailed }}">
+<div class="license-header"><h2 id="license-title"></h2><button type="button" class="license-close simplemodal-close">{{ ui.close }}</button></div>
+<p id="license-status" role="status" aria-live="polite"></p>
+<pre id="license-content" tabindex="0" aria-labelledby="license-title"></pre>
+<a id="license-original" href="vendor/LICENSE" target="_blank" rel="noopener">{{ ui.openLicenseFile }}</a>
 </div>
 <script>
 (function () {
@@ -91,6 +98,17 @@
     }
 }());
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+<script>
+if (!window.jQuery) document.write('<script src="vendor/jquery-1.12.4.min.js"><\/script>');
+</script>
+<script>
+if (window.jQuery) document.write('<script src="https://cdn.jsdelivr.net/gh/ericmmartin/simplemodal@156e9d7e6967ac239f997e883a7882b36b4403b0/src/jquery.simplemodal.js" integrity="sha384-ajXYb/E6TygdbQQqxAcCFHU+sJNQxNtdqIrqp0ES26OGb8DboMv2/3iF4tHCy8Kk" crossorigin="anonymous"><\/script>');
+</script>
+<script>
+if (window.jQuery && !window.jQuery.modal) document.write('<script src="vendor/jquery.simplemodal-1.4.5.js"><\/script>');
+</script>
+<script src="licenses.js"></script>
 <script type="module">
 if (window.kryzBrowserSupported) {
     document.getElementById('app').style.display = 'grid';
@@ -111,6 +129,10 @@ new ResizeObserver(fitScreen).observe(stage);
 new MutationObserver(fitScreen).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
 fitScreen();
 let emulator;
+window.kryzSetLicenseInputEnabled = enabled => {
+    emulator?.keyboard_set_enabled(enabled);
+    if (!enabled && document.pointerLockElement === screen) document.exitPointerLock();
+};
 const mouseHint = document.querySelector('#mouse-hint');
 async function captureMouse() {
     if (!emulator?.is_running() || document.pointerLockElement === screen) return;
@@ -144,8 +166,9 @@ async function runGame() {
     // Import guest font and update-notification policies before launching.
     // START's title selects HKCU\\Console\\Kryz Browser; the batch can then
     // change its visible title without changing the selected font.
-    await emulator.keyboard_send_text(`cmd.exe /d /c start /wait regedit.exe /s A:\\console.reg & start "Kryz Browser" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
-    document.querySelector('#screen_container').focus({ preventScroll: true });
+    // Keep the device-installation restart prompt out of the game session.
+    await emulator.keyboard_send_text(`cmd.exe /d /c start /wait regedit.exe /s A:\\console.reg & start "" A:\\guard.exe & start "Kryz Browser" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
+    if (!window.kryzLicenseOpen) screen.focus({ preventScroll: true });
     status.textContent = text.launched;
 }
 function fail(error) {
@@ -175,6 +198,7 @@ try {
         disable_speaker: true,
         autostart: false,
     });
+    emulator.keyboard_set_enabled(!window.kryzLicenseOpen);
     emulator.add_listener('download-error', () => fail(new Error(text.downloadFailed)));
     emulator.add_listener('emulator-ready', async () => {
         try {

@@ -25,6 +25,20 @@ main { min-width: 0; min-height: 0; display: flex; align-items: center; justify-
 #screen_container:focus-visible { outline: 2px solid #9ccaff; outline-offset: -2px; }
 #screen_container > div { white-space: pre; font: 14px monospace; line-height: 14px; }
 canvas { display: none; width: 100% !important; height: 100% !important; }
+.license-links { margin-top: 24px; }
+.license-links a { margin-right: 12px; }
+#license-overlay { background: #000; }
+#license-container { background: #141820; border: 1px solid #526075; border-radius: 8px; box-shadow: 0 24px 80px rgba(0, 0, 0, .5); }
+.license-dialog { display: none; position: relative; width: 100%; height: 100%; overflow: hidden; }
+.license-header { margin: 20px; overflow: hidden; zoom: 1; }
+.license-header h2 { float: left; margin: 0; font-size: 18px; }
+.license-close { float: right; }
+.license-close { flex: none; padding: 6px 12px; border: 1px solid #526075; border-radius: 6px; background: transparent; color: #9ccaff; font: inherit; cursor: pointer; }
+.license-close:hover { background: #304d69; }
+.license-dialog :focus-visible { outline: 2px solid #9ccaff; outline-offset: 3px; }
+#license-status { position: absolute; top: 80px; left: 20px; right: 20px; }
+#license-content { display: none; position: absolute; top: 80px; left: 20px; margin: 0; padding: 16px; overflow: auto; white-space: pre; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere; background: #0c1016; border: 1px solid #303947; border-radius: 6px; font: 13px/1.6 Consolas, "Courier New", monospace; }
+#license-original { position: absolute; bottom: 20px; left: 20px; right: 20px; font-size: 12px; }
 @media (max-width: 700px) {
   #app { padding: 12px; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   aside { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "title description" "languages languages" "download download" "status hint" "footer footer"; gap: 8px 16px; }
