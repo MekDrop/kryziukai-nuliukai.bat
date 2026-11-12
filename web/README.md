@@ -14,6 +14,21 @@ is disabled. Unsupported browsers do not download the emulator assets. The
 fallback is rendered in the page's language, including when JavaScript is disabled.
 Ordinary links switch languages without requiring JavaScript.
 
+The three license links open in a dark, scrollable div-based dialog using
+[SimpleModal](https://www.ericmmartin.com/projects/simplemodal/) 1.4.5 and jQuery
+1.12.4 from CDNs, pinned with Subresource Integrity. The build also downloads
+checksum-verified copies for a same-origin fallback when the CDNs cannot load.
+The separate classic `web/licenses.js` script uses legacy JavaScript, jQuery AJAX,
+and pixel-based layout, so the dialogs also work on the compatibility page in
+IE6-era browsers. The emulator still requires a modern browser. A legacy browser
+must be able to connect to the site's HTTP/TLS endpoint; compatible JavaScript
+does not update its HTTPS support.
+
+License text is fetched from the existing local files and displayed as plain text.
+Escape, the backdrop, or Close dismisses the dialog; keyboard input to the VM is
+disabled while it is open. Dialog labels are localized. If neither copy of the
+libraries loads, the links continue to open the original files normally.
+
 ## Run locally
 
 Requires Node 24, [act](https://nektosact.com/), and Docker with Linux containers enabled. Start Docker before building and run these commands from the repository root. The release lookup requires a GitHub token; act prompts for GITHUB_TOKEN if it is not provided.
@@ -62,7 +77,7 @@ the runner image and actions; `--bind` writes `dist/` back into this checkout.
 `act` reads `GITHUB_TOKEN` from your environment or prompts for it, for the release
 lookup action. CI uses its automatic read-only GitHub token.
 
-Requires Node 24 for the local npm commands. The action installs packaging tools,
+Requires Node 24 for the local npm commands. The action installs packaging tools and a MinGW C compiler,
 downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
 [cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the
@@ -201,8 +216,8 @@ omit the referring page URL. The image host must allow cross-origin downloads.
 ## Game integration
 
 The FAT12 floppy contains `kryz.bat`, `console.reg`, both language CSVs, the generated ASCII Lithuanian translation, the game license,
-and the unmodified x86 ANSICON 1.84 executable/DLL with its license.
-The helper adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
+the unmodified x86 ANSICON 1.84 executable/DLL with its license, and `guard.exe`.
+ANSICON adds about 60 KB of files inside the same 1.44 MiB floppy. It enables
 ANSI colors in the game console using `-p`, without a permanent registry
 installation. X is cyan, O is magenta, and winning marks are green. ASCII board
 characters remain compatible with the legacy console. If ANSICON is unavailable,
@@ -232,6 +247,16 @@ its update notifications for the desktop user, and requests no automatic reboot
 while a user is logged on. These policies prevent update interruptions in the
 disposable demo; they do not clear a pending reboot or dismiss a dialog already
 present in the upstream snapshot. They do not affect the host computer.
+
+Before launching the game, the page also starts `guard.exe` inside the guest.
+This small helper is compiled from `web/guest-guard.c` with MinGW for 32-bit
+Windows 2000, without a C runtime dependency. It checks every 100 ms for the
+specific **System Settings Change** dialog containing the new-device installation
+and restart question, and sends its No-button command directly. It handles both
+an already open prompt and one that appears later, without injecting keyboard
+input or moving focus. Other dialogs are left alone. The prompt may flash briefly
+before being dismissed. The helper stays in the disposable guest for the session;
+no host setting or upstream Windows image is changed.
 
 The initial desktop launch uses a short delay. On a particularly slow device,
 wait for the desktop, then use Windows Run to launch `A:\kryz.bat /ASCII /L en` if necessary. The status indicates
