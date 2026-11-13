@@ -1,7 +1,5 @@
 name: Publish v86 demo
 on:
-  push:
-    branches: [master]
   release:
     types: [published]
 permissions:
@@ -11,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    if: github.event_name != 'release' || !github.event.release.prerelease
+    if: '!github.event.release.prerelease'
     uses: ./.github/workflows/build.yml
   deploy:
     needs: build
@@ -46,3 +44,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v5
         id: deployment
+      - name: Verify the live release download links
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: bash web/verify-published-pages.sh
