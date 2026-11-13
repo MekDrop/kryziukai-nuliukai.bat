@@ -4,14 +4,28 @@ on:
     branches: [master]
   release:
     types: [published]
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  dispatch-release:
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start a separate Pages deployment for the release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh workflow run pages.yml --ref "$RELEASE_TAG"
   build:
-    if: github.event_name != 'release' || !github.event.release.prerelease
+    if: github.event_name != 'release'
     uses: ./.github/workflows/build.yml
   deploy:
     needs: build
@@ -46,3 +60,8 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v5
         id: deployment
+      - name: Verify the live release download links
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: bash web/verify-published-pages.sh

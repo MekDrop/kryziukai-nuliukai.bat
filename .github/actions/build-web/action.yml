@@ -30,14 +30,14 @@ runs:
       with:
         repo: MekDrop/kryziukai-nuliukai.bat
         # An explicit release tag takes precedence over the latest-release lookup.
-        tag: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+        tag: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' && github.ref_name || '' }}
         # Other builds use /releases/latest; leave draft/prerelease filters unset.
         latest: 'true'
     - name: Verify published release tag
-      if: github.event_name == 'release'
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref_type == 'tag')
       shell: bash
       env:
-        PUBLISHED_RELEASE_TAG: ${{ github.event.release.tag_name }}
+        PUBLISHED_RELEASE_TAG: ${{ github.event.release.tag_name || github.ref_name }}
         DOWNLOAD_RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
       run: |
         if [[ "$DOWNLOAD_RELEASE_TAG" != "$PUBLISHED_RELEASE_TAG" ]]; then
