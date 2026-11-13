@@ -1,5 +1,7 @@
 name: Build
 on:
+  push:
+    branches: [master]
   pull_request:
     branches: [master]
   workflow_call:
@@ -34,12 +36,27 @@ jobs:
           BUILD_LANGUAGE: ${{ matrix.language }}
         run: node web/validate-pages.mjs "$BUILD_LANGUAGE"
       - uses: actions/upload-artifact@v6
+        id: website
         with:
           name: web-build-${{ matrix.language }}
           path: dist/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
+      - name: Explain artifact-only build
+        if: github.event_name != 'release'
+        env:
+          BUILD_LANGUAGE: ${{ matrix.language }}
+          ARTIFACT_URL: ${{ steps.website.outputs.artifact-url }}
+        run: |
+          echo '::notice title=Website artifact built; not deployed::Deployment happens only when a stable release is published.'
+          {
+            echo '### Website artifact built; not deployed'
+            echo
+            echo 'This build uploads the website artifact for review. Deployment happens only when a stable release is published.'
+            echo
+            printf '[Download the %s website artifact](%s)\n' "$BUILD_LANGUAGE" "$ARTIFACT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload preview diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v6

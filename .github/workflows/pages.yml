@@ -1,7 +1,5 @@
 name: Publish v86 demo
 on:
-  push:
-    branches: [master]
   release:
     types: [published]
 permissions:
@@ -11,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    if: github.event_name != 'release' || !github.event.release.prerelease
+    if: '!github.event.release.prerelease'
     uses: ./.github/workflows/build.yml
   deploy:
     needs: build

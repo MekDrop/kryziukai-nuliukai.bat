@@ -170,10 +170,15 @@ January 1, May 1, and September 1 at 09:00 UTC. Security updates, when enabled
 in GitHub, follow GitHub's separate security-update policy.
 
 **Build** and **Test** are separate workflows, each with an English/Lithuanian
-matrix. Build runs on pull requests to `master` and is reused by Pages on pushes
-to `master` and published stable releases. It assembles each localized site,
+matrix. Build runs on pull requests and pushes to `master`, uploading the
+localized website artifacts without deploying them. Pages reuses Build for
+published stable releases. It assembles each localized site,
 validates the floppy by extracting and comparing every file, and generates
-sharing screenshots. Test runs on pull
+sharing screenshots.
+Non-release builds add an Actions notice and a job summary explaining that the
+website was built but not deployed, with a link to the uploaded artifact.
+
+Test runs on pull
 requests and pushes to `master`; it renders each template with a fixture release
 URL and validates the page and sharing metadata without generating screenshots,
 installing Chromium, or launching the VM.
@@ -188,9 +193,8 @@ Protect `master` with **Build (en)**, **Build (lt)**, **Test (en)**, and **Test 
 as required status checks so GitHub also enforces CI when merging, along with any
 other required checks/reviews.
 Workflows become active after these files land on the default branch.
-Merges using `GITHUB_TOKEN` do not trigger push workflows, so an automatically
-merged update will be included in the next Pages deployment triggered by a
-regular push or published stable release.
+Merged updates are included in the next Pages deployment when a stable release
+is published. Merging a pull request or pushing to `master` does not deploy Pages.
 
 To auto-merge GitHub Actions updates, create a fine-grained personal access
 token restricted to this repository with **Contents: Read and write**,
@@ -203,16 +207,22 @@ The workflow uses this token only for the merge command; API reads continue
 using `GITHUB_TOKEN`. Without the secret, non-workflow updates still use
 `GITHUB_TOKEN`, while workflow updates fail with an explicit setup message.
 Renamed and deleted workflow paths are checked too. A merge using the personal
-access token also triggers the Pages push workflow normally. Do not store a
+access token also triggers the ordinary push CI workflows. Do not store a
 short-lived GitHub App installation token as this persistent secret.
 
 ### GitHub Pages
 
 In GitHub **Settings → Pages → Build and deployment**, choose **GitHub Actions**.
-The workflow builds and deploys on pushes to `master` and when a stable GitHub
-release is published (`release: published`). Drafts and prereleases do not deploy.
-Push builds use the pushed commit; release builds use the release's tagged commit,
-which must contain this workflow and its shared build files.
+The workflow builds and deploys only when a stable GitHub release is published
+(`release: published`). Drafts and prereleases do not deploy. Release builds use
+the release's tagged commit, which must contain this workflow and its shared
+build files. Pull requests and pushes to `master` run Build and Test and upload
+the website artifacts; neither publishes the website.
+
+This avoids publishing a pre-release website from a push and then attempting
+to replace it with a release build under the same commit-based Pages deployment
+ID. Publishing another release from an already deployed commit still reuses
+that ID, so release tags should normally point to new commits.
 
 In **Settings → Environments → github-pages → Deployment branches and tags**,
 allow the `master` branch and add a **Tag** rule matching your release tags
@@ -229,9 +239,9 @@ site, runs the two preview matrix jobs, merges and validates `dist/`, configures
 English root and Lithuanian page with bounded retries and checks that their
 download URLs match the generated pages. A stale live link fails the deployment
 job instead of reporting success. No separate npm installation, PAT, or deploy key is required.
-Other branch pushes and tag pushes alone do not trigger this workflow. There are
+Branch pushes and tag pushes alone do not trigger this workflow. There are
 no pull request or manual triggers. Active deployments are not cancelled by newer
-pushes or releases.
+releases.
 
 Only `dist/` is published to Pages. During preview capture, Chromium fetches the
 upstream Windows snapshot and required disk chunks into its disposable VM;
