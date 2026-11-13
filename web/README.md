@@ -85,8 +85,7 @@ Requires Node 24 for the local npm commands. The action installs packaging tools
 downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
 [cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action)
-with the published release's tag on release deployments, including dispatched
-runs targeting a tag. The explicit
+with the published release's `tag_name` on release-triggered builds. The explicit
 tag takes precedence over the latest-release lookup, and the build fails if the
 returned tag does not match the published release. Other builds use `latest: true`
 with no filters, so they query GitHub's `/releases/latest` API endpoint, which
@@ -215,19 +214,6 @@ release is published (`release: published`). Drafts and prereleases do not deplo
 Push builds use the pushed commit; release builds use the release's tagged commit,
 which must contain this workflow and its shared build files.
 
-Publishing a stable release starts a separate `workflow_dispatch` run targeting
-that release tag. The release event itself only dispatches the run; it does not
-deploy. This follows the workaround for
-[GitHub Pages serving a previous artifact after a release deployment](https://github.com/actions/deploy-pages/issues/383),
-which can happen when a push and release refer to the same commit even though
-their generated download links differ. The dispatch job has `actions: write`
-permission to trigger the run using `GITHUB_TOKEN`; no additional secret is needed.
-
-For recovery, use **Actions → Publish v86 demo → Run workflow**. Choose `master`
-to rebuild with the latest stable release link, or a tag containing the updated
-workflow to use that tag's exact release. Older tags without `workflow_dispatch`
-cannot be dispatched.
-
 In **Settings → Environments → github-pages → Deployment branches and tags**,
 allow the `master` branch and add a **Tag** rule matching your release tags
 (for example, `v*`). Release runs use tag refs, so the existing `master` branch
@@ -244,7 +230,7 @@ English root and Lithuanian page with bounded retries and checks that their
 download URLs match the generated pages. A stale live link fails the deployment
 job instead of reporting success. No separate npm installation, PAT, or deploy key is required.
 Other branch pushes and tag pushes alone do not trigger this workflow. There are
-no pull request triggers. Active deployments are not cancelled by newer
+no pull request or manual triggers. Active deployments are not cancelled by newer
 pushes or releases.
 
 Only `dist/` is published to Pages. During preview capture, Chromium fetches the

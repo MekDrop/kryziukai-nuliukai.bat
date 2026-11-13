@@ -15,9 +15,9 @@ for page in index.html lt.html; do
     [[ "$page" != index.html ]] || path=''
     verified=false
     for attempt in {1..12}; do
-        url="${SITE_URL%/}/$path?deployment=${BUILD_ID:-verification}-$attempt"
+        url="${SITE_URL%/}/$path"
         if curl -L --fail --silent --show-error --max-time 10 \
-            -H 'Cache-Control: no-cache' "$url" -o "$response_file" &&
+            "$url" -o "$response_file" &&
             grep -Fq -- "href=\"$expected\"" "$response_file"; then
             verified=true
             break
