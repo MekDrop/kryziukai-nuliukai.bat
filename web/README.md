@@ -84,7 +84,11 @@ lookup action. CI uses its automatic read-only GitHub token.
 Requires Node 24 for the local npm commands. The action installs packaging tools and a MinGW C compiler,
 downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
-[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the
+[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action)
+with `latest: true` and no filters, so it uses GitHub's `/releases/latest` API
+endpoint. That endpoint excludes drafts and prereleases. Only its `zipball_url`
+is used for the download link; the checked-out commit does not select the release.
+Template rendering uses the
 Mustache npm library, pinned in `package-lock.json`. `web/render-pages.mjs` renders
 the single `web/index.html.mustache` template twice, using `web/locales/en.json`
 and `web/locales/lt.json`. The release URL is passed through the environment and

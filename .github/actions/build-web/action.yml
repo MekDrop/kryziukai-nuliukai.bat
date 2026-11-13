@@ -29,8 +29,8 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         repo: MekDrop/kryziukai-nuliukai.bat
+        # Leave filters unset to use GitHub's /releases/latest endpoint.
         latest: 'true'
-        prerelease: 'false'
     - name: Render localized pages from the shared template
       shell: bash
       env:
