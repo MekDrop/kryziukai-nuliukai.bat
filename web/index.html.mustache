@@ -40,6 +40,9 @@
 </div>
 <div id="app">
 <aside>
+<button class="mobile-menu-toggle" type="button" aria-label="{{ ui.menu }}" aria-expanded="false" aria-controls="mobile-menu">
+<svg viewBox="0 0 20 16" aria-hidden="true"><path d="M1 2h18M1 8h18M1 14h18"/></svg>
+</button>
 <h1>Kryziukai-Nuliukai.bat</h1>
 <p>{{ ui.description }}</p>
 <nav class="languages" aria-label="{{ ui.languages }}" title="{{ ui.restart }}">
@@ -50,13 +53,17 @@
 <svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fdb913" d="M0 0h30v7H0z"/><path fill="#006a44" d="M0 7h30v6H0z"/><path fill="#c1272d" d="M0 13h30v7H0z"/></svg>
 </a>
 </nav>
+<div class="secondary-actions" id="mobile-menu">
 <a class="download" href="{{ latestReleaseZipUrl }}">{{ ui.download }}</a>
-<p id="status" role="status" aria-live="polite">{{ ui.checking }}</p>
-<p class="hint" id="machine-input-hint"><span>{{ ui.keyboard }}</span><br><span id="mouse-hint">{{ ui.mouseAvailable }}</span><br><span>{{ ui.reload }}</span></p>
 <footer><a href="https://github.com/MekDrop/kryziukai-nuliukai.bat">{{ ui.source }}</a><a href="vendor/LICENSE" data-license>{{ ui.v86License }}</a><a href="vendor/BIOS-LICENSE.txt" data-license>{{ ui.biosLicense }}</a><a href="vendor/ANSICON-LICENSE.txt" data-license>{{ ui.ansiLicense }}</a></footer>
+</div>
+<p id="status" role="status" aria-live="polite">{{ ui.checking }}</p>
+<p class="hint" id="machine-input-hint"><span>{{ ui.keyboard }}<span class="mouse-shortcut"> {{ ui.mouseShortcut }}</span></span><br><span id="mouse-hint">{{ ui.mouseAvailable }}</span><br><span>{{ ui.reload }}</span></p>
 </aside>
 <main aria-label="{{ ui.machine }}">
-<div id="screen_container" role="application" aria-label="{{ ui.machine }}" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" tabindex="0"><div></div><canvas width="1024" height="768"></canvas></div>
+<div id="screen_container" role="application" aria-label="{{ ui.machine }}" aria-describedby="machine-input-hint" aria-keyshortcuts="Alt+M" aria-disabled="true" tabindex="-1"><div></div><canvas width="1024" height="768"></canvas></div>
+<button class="machine-cover" type="button" aria-hidden="true" disabled><span class="preparing-indicator"><span class="preparing-text">{{ ui.preparing }}</span><span class="preparing-progress"><span></span></span></span></button>
+<textarea class="phone_keyboard" inputmode="text" enterkeyhint="enter" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="{{ ui.keyboard }}" tabindex="-1"></textarea>
 </main>
 </div>
 <div id="license-modal" class="license-dialog" role="dialog" aria-modal="true" aria-labelledby="license-title" aria-hidden="true" data-loading="{{ ui.licenseLoading }}" data-failed="{{ ui.licenseFailed }}">
@@ -111,31 +118,161 @@ if (window.jQuery && !window.jQuery.modal) document.write('<script src="vendor/j
 <script src="licenses.js"></script>
 <script type="module">
 if (window.kryzBrowserSupported) {
-    document.getElementById('app').style.display = 'grid';
+    const app = document.getElementById('app');
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenu = document.querySelector('#mobile-menu');
+    app.classList.add('menu-enhanced');
+    app.style.display = 'grid';
     document.getElementById('compatibility').style.display = 'none';
 const status = document.querySelector('#status');
 const stage = document.querySelector('main');
 const screen = document.querySelector('#screen_container');
+const machineCover = document.querySelector('.machine-cover');
+const phoneKeyboard = document.querySelector('.phone_keyboard');
 const canvas = screen.querySelector('canvas');
 const language = document.documentElement.lang;
 const text = {{{ runtimeText }}};
-function fitScreen() {
-    const scale = Math.min(stage.clientWidth / canvas.width, stage.clientHeight / canvas.height);
-    if (!Number.isFinite(scale) || scale <= 0) return;
-    screen.style.width = `${Math.floor(canvas.width * scale)}px`;
-    screen.style.height = `${Math.floor(canvas.height * scale)}px`;
+function closeMobileMenu({ restoreFocus = false } = {}) {
+    mobileMenu.classList.remove('is-open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) menuToggle.focus();
 }
-new ResizeObserver(fitScreen).observe(stage);
-new MutationObserver(fitScreen).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
+menuToggle.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('is-open');
+    menuToggle.setAttribute('aria-expanded', String(open));
+});
+mobileMenu.addEventListener('click', event => {
+    if (event.target.closest('a')) closeMobileMenu();
+});
+document.addEventListener('pointerdown', event => {
+    if (!mobileMenu.classList.contains('is-open')) return;
+    if (!mobileMenu.contains(event.target) && !menuToggle.contains(event.target)) closeMobileMenu();
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
+        event.preventDefault();
+        closeMobileMenu({ restoreFocus: true });
+    }
+});
+function setPixelSize(element, property, value) {
+    const current = Number.parseFloat(element.style[property]);
+    if (!Number.isFinite(current) || Math.abs(current - value) >= 1) {
+        element.style[property] = `${value}px`;
+    }
+}
+function fitScreen() {
+    const canvasWidth = Number(canvas.width);
+    const canvasHeight = Number(canvas.height);
+    if (!Number.isFinite(canvasWidth) || !Number.isFinite(canvasHeight) || canvasWidth <= 0 || canvasHeight <= 0) return;
+    let availableWidth;
+    const mobileLayout = window.matchMedia('(max-width: 700px)').matches;
+    if (mobileLayout) {
+        const appStyle = getComputedStyle(app);
+        const stageStyle = getComputedStyle(stage);
+        const paddingX = Number.parseFloat(appStyle.paddingLeft) + Number.parseFloat(appStyle.paddingRight);
+        const borderX = Number.parseFloat(stageStyle.borderLeftWidth) + Number.parseFloat(stageStyle.borderRightWidth);
+        const borderY = Number.parseFloat(stageStyle.borderTopWidth) + Number.parseFloat(stageStyle.borderBottomWidth);
+        availableWidth = Math.max(1, app.clientWidth - paddingX - borderX);
+        // Mobile is width-first: status/help and the software keyboard may sit
+        // below the viewport, but must never make the guest display narrower.
+        const scale = availableWidth / canvasWidth;
+        if (!Number.isFinite(scale) || scale <= 0) return;
+        const width = Math.max(1, Math.floor(canvasWidth * scale));
+        const height = Math.max(1, Math.floor(canvasHeight * scale));
+        setPixelSize(screen, 'width', width);
+        setPixelSize(screen, 'height', height);
+        setPixelSize(stage, 'width', width + borderX);
+        setPixelSize(stage, 'height', height + borderY);
+        return;
+    }
+    if (stage.style.width) stage.style.width = '';
+    if (stage.style.height) stage.style.height = '';
+    availableWidth = stage.clientWidth;
+    const availableHeight = stage.clientHeight;
+    const scale = Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight);
+    if (!Number.isFinite(scale) || scale <= 0) return;
+    setPixelSize(screen, 'width', Math.max(1, Math.floor(canvasWidth * scale)));
+    setPixelSize(screen, 'height', Math.max(1, Math.floor(canvasHeight * scale)));
+}
+let fitFrame = 0;
+function scheduleFitScreen() {
+    if (fitFrame) return;
+    fitFrame = requestAnimationFrame(() => {
+        fitFrame = 0;
+        fitScreen();
+    });
+}
+const screenResizeObserver = new ResizeObserver(scheduleFitScreen);
+screenResizeObserver.observe(app);
+screenResizeObserver.observe(stage);
+screenResizeObserver.observe(status);
+screenResizeObserver.observe(document.querySelector('.hint'));
+new MutationObserver(scheduleFitScreen).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
+window.addEventListener('resize', scheduleFitScreen);
+window.visualViewport?.addEventListener('resize', scheduleFitScreen);
 fitScreen();
 let emulator;
+let licenseInputEnabled = true;
+let launchInputActive = false;
+function isUiSurface(element) {
+    return element !== screen && element !== phoneKeyboard && !!element?.closest(
+        '#license-modal, a[href], button, input, select, textarea, [contenteditable="true"]');
+}
+function uiControlHasFocus() {
+    return isUiSurface(document.activeElement);
+}
+function syncEmulatorKeyboard() {
+    const covered = !machineCover.classList.contains('is-hidden');
+    emulator?.keyboard_set_enabled(launchInputActive || (!covered && licenseInputEnabled && !uiControlHasFocus()));
+}
 window.kryzSetLicenseInputEnabled = enabled => {
-    emulator?.keyboard_set_enabled(enabled);
+    licenseInputEnabled = enabled;
+    syncEmulatorKeyboard();
     if (!enabled && document.pointerLockElement === screen) document.exitPointerLock();
 };
+document.addEventListener('focusin', syncEmulatorKeyboard);
+document.addEventListener('focusout', () => setTimeout(syncEmulatorKeyboard, 0));
+function isolateLaunchUiKey(event) {
+    if (launchInputActive) event.stopImmediatePropagation();
+}
+// Registered before v86 installs its window listeners. Physical events have
+// already reached their target and document here, so native page behavior
+// works while no user keystroke can contaminate automatic command entry.
+window.addEventListener('keydown', isolateLaunchUiKey);
+window.addEventListener('keyup', isolateLaunchUiKey);
+window.addEventListener('input', isolateLaunchUiKey);
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Tab' || launchInputActive || document.activeElement === phoneKeyboard
+        || document.activeElement === screen || document.pointerLockElement === screen) return;
+    // v86 listens at window level. Yield Tab before its handler so browser
+    // focus can move through page chrome without stealing guest Tab input.
+    emulator?.keyboard_set_enabled(false);
+    setTimeout(syncEmulatorKeyboard, 0);
+}, true);
 const mouseHint = document.querySelector('#mouse-hint');
-async function captureMouse() {
-    if (!emulator?.is_running() || document.pointerLockElement === screen) return;
+function focusPhoneKeyboard() {
+    const scrollPosition = { x: window.scrollX, y: window.scrollY };
+    const restoreFocusScroll = () => {
+        if (document.activeElement !== phoneKeyboard) return;
+        if (window.scrollX !== scrollPosition.x || window.scrollY !== scrollPosition.y) {
+            window.scrollTo(scrollPosition.x, scrollPosition.y);
+        }
+    };
+    try { phoneKeyboard.focus({ preventScroll: true }); }
+    catch { phoneKeyboard.focus(); }
+    requestAnimationFrame(restoreFocusScroll);
+    const viewport = window.visualViewport;
+    viewport?.addEventListener('resize', restoreFocusScroll, { once: true });
+    setTimeout(() => viewport?.removeEventListener('resize', restoreFocusScroll), 600);
+}
+async function captureMouse(event) {
+    if (!machineCover.classList.contains('is-hidden') || !emulator?.is_running() || document.pointerLockElement === screen) return;
+    const touchInteraction = event?.pointerType === 'touch'
+        || (!event?.pointerType && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    if (touchInteraction) {
+        focusPhoneKeyboard();
+        return;
+    }
     try {
         await screen.requestPointerLock();
     } catch {
@@ -160,18 +297,58 @@ screen.addEventListener('keydown', event => {
 });
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function runGame() {
-    // Windows+R opens Run on the restored Windows 2000 desktop.
-    emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
-    await sleep(800);
-    // Import guest font and update-notification policies before launching.
-    // START's title selects HKCU\\Console\\Kryz Browser; the batch can then
-    // change its visible title without changing the selected font.
-    // Keep the device-installation restart prompt out of the game session.
-    await emulator.keyboard_send_text(`cmd.exe /d /c start /wait regedit.exe /s A:\\console.reg & start "" A:\\guard.exe & start "Kryz Browser" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
-    if (!window.kryzLicenseOpen) screen.focus({ preventScroll: true });
+    launchInputActive = true;
+    syncEmulatorKeyboard();
+    try {
+        // Windows+R opens Run on the restored Windows 2000 desktop.
+        emulator.keyboard_send_scancodes([0xe0, 0x5b, 0x13, 0x93, 0xe0, 0xdb]);
+        await sleep(800);
+        // Import guest font and update-notification policies before launching.
+        // START's title selects HKCU\\Console\\Kryz Browser; the batch can then
+        // change its visible title without changing the selected font.
+        // Keep the device-installation restart prompt out of the game session.
+        await emulator.keyboard_send_text(`cmd.exe /d /c start /wait regedit.exe /s A:\\console.reg & start "" A:\\guard.exe & start "Kryz Browser" /max cmd.exe /d /c A:\\kryz.bat /ASCII /L ${language}\n`, 20);
+    } finally {
+        launchInputActive = false;
+        syncEmulatorKeyboard();
+    }
+    await sleep(1500);
+    const touchLayout = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    if (touchLayout) {
+        machineCover.querySelector('.preparing-text').textContent = text.tapToPlay;
+        machineCover.classList.add('is-ready');
+        machineCover.disabled = false;
+        machineCover.setAttribute('aria-hidden', 'false');
+        status.textContent = text.launched;
+        return;
+    }
+    const active = document.activeElement;
+    const shouldFocusScreen = !window.kryzLicenseOpen && !mobileMenu.classList.contains('is-open')
+        && (!active || active === document.body || active === document.documentElement || active === screen);
+    enableMachineInteraction();
+    if (shouldFocusScreen) screen.focus({ preventScroll: true });
     status.textContent = text.launched;
 }
+machineCover.addEventListener('click', () => {
+    if (!machineCover.classList.contains('is-ready')) return;
+    // Keep focus synchronous with this trusted activation so mobile browsers
+    // are allowed to open their software keyboard.
+    focusPhoneKeyboard();
+    enableMachineInteraction();
+    status.textContent = text.launched;
+});
+function enableMachineInteraction() {
+    machineCover.classList.add('is-hidden');
+    machineCover.classList.remove('is-ready');
+    machineCover.disabled = true;
+    machineCover.setAttribute('aria-hidden', 'true');
+    screen.tabIndex = 0;
+    screen.removeAttribute('aria-disabled');
+    syncEmulatorKeyboard();
+}
 function fail(error) {
+    launchInputActive = false;
+    enableMachineInteraction();
     status.textContent = `${text.failed}: ${error.message || error}`;
 }
 try {
@@ -198,7 +375,7 @@ try {
         disable_speaker: true,
         autostart: false,
     });
-    emulator.keyboard_set_enabled(!window.kryzLicenseOpen);
+    syncEmulatorKeyboard();
     emulator.add_listener('download-error', () => fail(new Error(text.downloadFailed)));
     emulator.add_listener('emulator-ready', async () => {
         try {

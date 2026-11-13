@@ -75,7 +75,10 @@
                 $.modal.close();
                 document.body.style.overflow = previousOverflow;
                 if (window.kryzSetLicenseInputEnabled) window.kryzSetLicenseInputEnabled(true);
-                if (trigger) trigger.focus();
+                if (trigger) {
+                    if ($(trigger).is(':visible')) trigger.focus();
+                    else $('.mobile-menu-toggle:visible').focus();
+                }
             }
         });
         request = $.ajax({
