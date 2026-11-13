@@ -84,7 +84,14 @@ lookup action. CI uses its automatic read-only GitHub token.
 Requires Node 24 for the local npm commands. The action installs packaging tools and a MinGW C compiler,
 downloads and verifies ANSICON, renders both pages, and creates the FAT12 floppy
 using dosfstools and mtools. Release lookup uses the pinned
-[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action). Template rendering uses the
+[cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action)
+with the published release's `tag_name` on release-triggered builds. The explicit
+tag takes precedence over the latest-release lookup, and the build fails if the
+returned tag does not match the published release. Other builds use `latest: true`
+with no filters, so they query GitHub's `/releases/latest` API endpoint, which
+excludes drafts and prereleases. Only the resolved release's `zipball_url` is used
+for the download link; the checked-out commit does not select the release.
+Template rendering uses the
 Mustache npm library, pinned in `package-lock.json`. `web/render-pages.mjs` renders
 the single `web/index.html.mustache` template twice, using `web/locales/en.json`
 and `web/locales/lt.json`. The release URL is passed through the environment and
@@ -97,7 +104,7 @@ The same build action runs in the Build workflow, reused by Pages deployment.
 The separate `.github/actions/capture-preview/` action installs Chromium and
 generates the sharing previews described below.
 The build resolves
-the latest published GitHub release and replaces `{{ latestReleaseZipUrl }}`
+the triggering release (or the latest stable release for other builds) and replaces `{{ latestReleaseZipUrl }}`
 in `web/index.html.mustache` with its release ZIP archive URL. The deployed page makes no
 release API requests. A failed lookup stops the build instead of publishing a
 stale download link. Both rendered pages contain the download link. Use

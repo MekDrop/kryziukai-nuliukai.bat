@@ -22,15 +22,28 @@ runs:
         cd .cache/web-build/ansicon
         echo '7b78124871239696d9b0472d6c4411dc69f388bcbde3c5e297dade41f6a1629a  x86/ansicon.exe' | sha256sum -c -
         echo 'ba0ec3831a1a5baf669c6e1f1bd01415895677272aa01e099b97f62dfb8d07b5  x86/ANSI32.dll' | sha256sum -c -
-    - name: Resolve latest release ZIP
+    - name: Resolve release ZIP
       id: release
       uses: cardinalby/git-get-release-action@2ab178299eecb253f820dcf2cce11f62be1178f7 # v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         repo: MekDrop/kryziukai-nuliukai.bat
+        # An explicit release tag takes precedence over the latest-release lookup.
+        tag: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
+        # Other builds use /releases/latest; leave draft/prerelease filters unset.
         latest: 'true'
-        prerelease: 'false'
+    - name: Verify published release tag
+      if: github.event_name == 'release'
+      shell: bash
+      env:
+        PUBLISHED_RELEASE_TAG: ${{ github.event.release.tag_name }}
+        DOWNLOAD_RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+      run: |
+        if [[ "$DOWNLOAD_RELEASE_TAG" != "$PUBLISHED_RELEASE_TAG" ]]; then
+          echo '::error::Download release tag does not match the published release.'
+          exit 1
+        fi
     - name: Render localized pages from the shared template
       shell: bash
       env:
